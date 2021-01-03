@@ -11,7 +11,7 @@ Solve Rigid Body Dynamics' problems like:
 
 An example of with the initial condition, we can get a connecting rod of a motor:
 
-<img src="https://raw.githubusercontent.com/carlos-adir/RigidBodyDynamics/docs/img/biela.gif" alt="biela" width="400"/>
+<img src="https://raw.githubusercontent.com/carlos-adir/RigidBodyDynamics/master/docs/img/biela.gif" alt="biela" width="400"/>
 
 
 ### Introduction
