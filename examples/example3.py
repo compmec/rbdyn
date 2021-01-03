@@ -1,6 +1,8 @@
 
 import numpy as np
 import sympy as sp
+import sys
+sys.path.append("../src/")
 from frames import FrameReference
 from objet import Objet
 

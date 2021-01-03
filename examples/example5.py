@@ -1,56 +1,53 @@
 # -*- coding: utf-8 -*-
 import sympy as sp
 import numpy as np
+import sys
+sys.path.append("../src/")
 from lagrange import get_FunctionsExp
 
 if __name__ == "__main__":
     t = sp.symbols("t")
 
-    x = sp.Function("x")(t)
-    y = sp.Function("y")(t)
-    q = sp.Function("q")(t)
-    U = [x, y, q]
+    theta = sp.Function("theta")(t)
+    beta = sp.Function("beta")(t)
+    p = sp.Function("p")(t)
+    U = [theta, beta, p]
 
-    x_ = sp.diff(x, t)
-    y_ = sp.diff(y, t)
-    q_ = sp.diff(q, t)
-    U_ = [x_, y_, q_]
+    theta_ = sp.diff(theta, t)
+    beta_ = sp.diff(beta, t)
+    p_ = sp.diff(p, t)
+    U_ = [theta_, beta_, p_]
 
-    # Problem Data:
+    # Problem Data
     I0 = 1.3e-2  # kg*m^2
     m2 = 0.44  # kg
     m3 = 0.470  # kg
     a = 0.045  # m
     l = 0.145  # m
     grav = 0  # m/s^2
-    # Force applied in the system
-    # is a function of t, U and U_
     P = (0, 0, 0)
-    # P(t, U, U_)
 
-    g = (x**2 + y**2 - a**2,
-         y**2 + q**2 - l**2)
+    g = [a * sp.sin(theta) + l * sp.sin(beta),
+         p - a * sp.cos(theta) - l * sp.cos(beta)]
 
     t0 = 0
-    U0 = (a, 0, l)
-    U0_ = (0, 1, 0)
+    U0 = [0, 0, 0]  # Initial positionating of each variable
+    U0_ = [1, 0, 0]  # Initial speed of each variable
 
-    m1 = I0 / a**2
-    M11 = m1 + m2 + m3
-    M22 = m1 + m2 / 3
-    M33 = m2 / 3 + m3
-    M13 = m2 / 2 + m3
+    M11 = I0 + m2 * a**2
+    M22 = m2 * l**2 / 3
+    M33 = m3
+    M12 = m2 * a * l / 2
 
-    Ep = 0
     Ec = 0
+    Ep = 0
 
-    # M11, M22, M33, M13 = sp.symbols("M11 M22 M33 M13")
-    Ec += M11 * x_**2 / 2
-    Ec += M22 * y_**2 / 2
-    Ec += M33 * q_**2 / 2
-    Ec += M13 * x_ * q_
+    Ec += M11 * theta_**2 / 2
+    Ec += M22 * beta_**2 / 2
+    Ec += M33 * p**2 / 2
+    Ec += M12 * theta_ * beta_ * sp.cos(theta - beta)
 
-    Ep += m2 * y * grav / 2
+    Ep += m2 * a * sp.sin(theta) / 2
 
     Mexp, Fexp = get_FunctionsExp(Ec, Ep, U, g, P)
     print("Mexp = ")

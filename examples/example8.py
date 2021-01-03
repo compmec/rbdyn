@@ -1,6 +1,8 @@
 
 import sympy as sp
 import numpy as np
+import sys
+sys.path.append("../src/")
 from lagrange import get_M, get_K
 from vibrations import linearize, get_vibrationmodules
 

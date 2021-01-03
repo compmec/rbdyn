@@ -1,9 +1,10 @@
-# -*- coding: utf-8 -*-
 
 import sympy as sp
 import numpy as np
 import time
 import matplotlib.pyplot as plt
+import sys
+sys.path.append("../src/")
 from lagrange import get_FunctionsExp, get_Rexp
 from solveRungeKutta import RungeKutta
 
@@ -11,59 +12,46 @@ from solveRungeKutta import RungeKutta
 if __name__ == "__main__":
     t = sp.symbols("t")
 
-    x = sp.Function("x")(t)
-    y = sp.Function("y")(t)
-    q = sp.Function("q")(t)
-    U = [x, y, q]
+    theta = sp.Function("theta")(t)
+    beta = sp.Function("beta")(t)
+    p = sp.Function("p")(t)
+    U = [theta, beta, p]
+    theta_ = sp.diff(theta, t)
+    beta_ = sp.diff(beta, t)
+    p_ = sp.diff(p, t)
+    U_ = [theta_, beta_, p_]
 
-    x_ = sp.diff(x, t)
-    y_ = sp.diff(y, t)
-    q_ = sp.diff(q, t)
-    U_ = [x_, y_, q_]
-
-    # Problem Data:
+    # Problem Data
     I0 = 1.3e-2  # kg*m^2
     m2 = 0.44  # kg
     m3 = 0.470  # kg
     a = 0.045  # m
     l = 0.145  # m
     grav = 0  # m/s^2
-    # Force applied in the system
-    # is a function of t, U and U_
+
+    g = [a * sp.sin(theta) + l * sp.sin(beta),
+         p - a * sp.cos(theta) - l * sp.cos(beta)]
+
+    t0 = 0
     P = (0, 0, 0)
-    # P(t, U, U_)
     Ttotal = 10
     dt = 0.001
     divisions = int((Ttotal / dt)) + 1
 
-    # a, l = sp.symbols("a l")
+    M11 = I0 + m2 * a**2
+    M22 = m2 * l**2 / 3
+    M33 = m3
+    M12 = m2 * a * l / 2
 
-    g = (x**2 + y**2 - a**2,
-         y**2 + q**2 - l**2)
-
-    t0 = 0
-
-    m1 = I0 / a**2
-    M11 = m1 + m2 + m3
-    M22 = m1 + m2 / 3
-    M33 = m2 / 3 + m3
-    M13 = m2 / 2 + m3
-
-    Ep = 0
     Ec = 0
+    Ep = 0
 
-    M12 = 0
-    M23 = 0
-    # M12, M13, M23 = sp.symbols("M12 M13 M23")
-    # M11, M22, M33 = sp.symbols("M11 M22 M33")
-    Ec += M11 * x_**2 / 2
-    Ec += M22 * y_**2 / 2
-    Ec += M33 * q_**2 / 2
-    Ec += M13 * x_ * q_
-    Ec += M12 * x_ * y_
-    Ec += M23 * y_ * q_
+    Ec += M11 * theta_**2 / 2
+    Ec += M22 * beta_**2 / 2
+    Ec += M33 * p**2 / 2
+    Ec += M12 * theta_ * beta_ * sp.cos(theta - beta)
 
-    # Ep += m2 * y * grav / 2
+    Ep += m2 * grav * a * sp.sin(theta) / 2
 
     start = time.process_time()
     # Mexp, Fexp = get_FunctionsExp(Ec, Ep, U, g, P)
@@ -84,13 +72,15 @@ if __name__ == "__main__":
         y0 = a * np.sin(theta0)
         beta0 = np.arcsin(-y0 / l)
         q0 = l * np.cos(beta0)
+        p0 = x0 + q0
         x0_ = -a * np.sin(theta0) * theta0_
         y0_ = a * np.cos(theta0) * theta0_
         beta0_ = -a * theta0_ * np.cos(theta0) / (l * np.cos(beta0))
         q0_ = -l * np.sin(beta0) * beta0_
+        p0_ = x0_ + q0_
 
-        U0 = (x0, y0, q0)
-        U0_ = (x0_, y0_, q0_)
+        U0 = (theta0, beta0, p0)
+        U0_ = (theta0_, beta0_, p0_)
     time3 = time.process_time()
     print("Set initial conditions")
     print("    Time = " + str(time3 - time2) + " s")
@@ -100,14 +90,14 @@ if __name__ == "__main__":
     print("Runge Kutta solved")
     print("    Time = " + str(end - time3) + " s")
 
-    Xvalues = u[:, 0]
-    Yvalues = u[:, 1]
-    Qvalues = u[:, 2]
+    THETAvalues = u[:, 0]
+    BETAvalues = u[:, 1]
+    Pvalues = u[:, 2]
 
     plt.figure()
-    plt.plot(t, Xvalues, color="b", label=r"$x$")
-    plt.plot(t, Yvalues, color="r", label=r"$y$")
-    plt.plot(t, Qvalues, color="g", label=r"$q$")
+    plt.plot(t, THETAvalues, color="b", label=r"$\theta$")
+    plt.plot(t, BETAvalues, color="r", label=r"$\beta$")
+    plt.plot(t, Pvalues, color="g", label=r"$p$")
     plt.title("Values of solved system")
     plt.legend()
 
@@ -141,4 +131,5 @@ if __name__ == "__main__":
     plt.plot(t, g2_, color="r", label=r"$g_{2}'$")
     plt.legend()
     plt.title("Derivative of equality constraints")
+    plt.show()
     plt.show()
