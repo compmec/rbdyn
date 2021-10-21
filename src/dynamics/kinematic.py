@@ -55,11 +55,7 @@ def VerifyValidRotation(value):
     R = np.array(value)
     RT = np.transpose(R)
     M = np.dot(RT, R)
-    print("M = ")
-    print(M)
     diff = np.abs(M - np.eye(3))
-    print("M = ")
-    print(M)
     if np.any(diff > 1e-10):
         raise ValueError("The given R is not a rotation matrix!")
 
@@ -98,7 +94,7 @@ class Compute:
         u = np.array([Ux[2, 1] - Ux[1, 2],
                       Ux[0, 2] - Ux[2, 0],
                       Ux[1, 0] - Ux[0, 1]])
-        u /= 2
+        u = u / 2
         return u
 
     @staticmethod
@@ -214,9 +210,8 @@ class Kinematic:
 
     @r.setter
     def r(self, value):
-        raise NotImplementedError("r is not yet valid")
         Verify3DVector(value)
-        self._r = value
+        self.R = Compute.r2R(value)
 
     @property
     def w(self):
