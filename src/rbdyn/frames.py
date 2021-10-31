@@ -154,14 +154,19 @@ class FrameComposition:
             The position of (kine1.R) in relation to (R0) is given by
             the vectors kine01.p and rotation matrix R01
         """
-        Rp0 = np.dot(kine01.R, kine0.p)
-        return kine01.p + Rp0
+        dp = kine1.p - kine01.p
+
+        Rt = np.transpose(kine01.R)
+        return np.dot(Rt, dp)
 
     @staticmethod
     def _v1(kine01, kine0):
-        Rp0 = np.dot(kine01.R, kine0.p)
-        Rv0 = np.dot(kine01.R, kine0.v)
-        return kine01.v + np.dot(kine01.W, Rp0) + Rv0
+        dp = kine0.p - kine01.p
+        dv = kine0.v - kine01.v
+        Wdp = np.dot(kine01.W, dp)
+
+        Rt = np.transpose(kine01.R)
+        return np.dot(Rt, dv - Wdp)
 
     @staticmethod
     def _a1(kine01, kine0):
@@ -198,19 +203,15 @@ class FrameComposition:
             The position of (kine1.R) in relation to (R0) is given by
             the vectors kine01.p and rotation matrix kine01.R
         """
-        dp = kine1.p - kine01.p
 
-        Rt = np.transpose(kine01.R)
-        return np.dot(Rt, dp)
+        Rp1 = np.dot(kine01.R, kine1.p)
+        return kine01.p + Rp1
 
     @staticmethod
     def _v0(kine01, kine1):
-        dp = kine1.p - kine01.p
-        dv = kine1.v - kine01.v
-        Wdp = np.dot(kine01.W, dp)
-
-        Rt = np.transpose(kine01.R)
-        return np.dot(Rt, dv - Wdp)
+        Rp1 = np.dot(kine01.R, kine1.p)
+        Rv1 = np.dot(kine01.R, kine1.v)
+        return kine01.v + np.dot(kine01.W, Rp1) + Rv1
 
     @staticmethod
     def _a0(kine01, kine1):
