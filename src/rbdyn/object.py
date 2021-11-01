@@ -5,6 +5,7 @@ from rbdyn.__classes__ import ObjectClass
 from rbdyn.__validation__ import Validation_Object
 from rbdyn.kinematic import ObjectKinematic
 from rbdyn.frames import FrameReference, FrameComposition
+from rbdyn import energy
 
 
 class Object(ObjectClass):
@@ -51,57 +52,17 @@ class Object(ObjectClass):
     @II.setter
     def II(self, value):
         Validation_Object.II(value)
-        CM = self.data[self.baseframe].CM
-        # PAT is the Parallel Axis Theorem
-        if CM is None:
-            self.data[self.baseframe].CM = np.zeros(3)
-            CM = np.zeros(3)
-        PAT = FrameComposition.PAT(CM)
-        self.data[self.baseframe].II = value - PAT
-
-    def getCM(self, frame):
-        Validation_Object.getCM(frame)
-        if frame in self.data:
-            CM = self.data[frame].CM
-            if CM is not None:
-                return CM
-        return self.get(frame, "CM")
-
-    def getII(self, frame):
-        Validation_Object.getII(frame)
-        if frame in self.data:
-            II = self.data[frame].II
-            if II is not None:
-                return II
-        return self.get(frame, "II")
+        self.data[self.baseframe].II = value
 
     def get(self, frame, element):
         Validation_Object.get(frame, element)
         if frame not in self.data:
             self.__computeElement(frame, element)
 
-        if element == "p":
-            return self.data[frame].p
-        elif element == "v":
-            return self.data[frame].v
-        elif element == "a":
-            return self.data[frame].a
-        elif element == "r":
-            return self.data[frame].r
-        elif element == "w":
-            return self.data[frame].w
-        elif element == "q":
-            return self.data[frame].q
-        elif element == "R":
-            return self.data[frame].R
-        elif element == "W":
-            return self.data[frame].W
-        elif element == "Q":
-            return self.data[frame].Q
-        elif element == "CM":
-            return self.data[frame].CM
-        elif element == "II":
-            return self.data[frame].II
+        result = self.data[frame].get(element)
+        if result is None:
+            self.__computeElement(frame, element)
+        return self.data[frame].get(element)
 
     def __computeElement(self, frame, element):
         listFoward = []
@@ -109,11 +70,11 @@ class Object(ObjectClass):
         f = self.baseframe
         while f is not None:
             listFoward.insert(0, f)
-            f = f.base
+            f = f.baseframe
         f = frame
         while f is not None:
             listBackward.insert(0, f)
-            f = f.base
+            f = f.baseframe
         while True:
             if len(listFoward) < 2:
                 break
@@ -166,9 +127,7 @@ class Object(ObjectClass):
         We suppose that branchframe is already know, that we know all the value
         """
         n = len(listframes)
-        print("n = ", n)
         for i in range(n - 1):
-            print("   - loop i = %d" % i)
             frame = listframes[i + 1]
             if frame not in self.data:
                 self.data[frame] = ObjectKinematic(init=False)
@@ -193,3 +152,7 @@ class Object(ObjectClass):
             if element == "q":
                 if kine1.q is None:
                     kine1.q = FrameComposition.q1(kine01, kine0)
+
+    def KineticEnergy(self, frame):
+        v = self.get(frame, "v")
+        return energy.KineticEnergy(self.mass, v)

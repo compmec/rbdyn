@@ -1,5 +1,6 @@
 import pytest
 import numpy as np
+from rbdyn.variable import Variable
 from rbdyn.object import Object
 from rbdyn.frames import FrameReference
 
@@ -112,3 +113,31 @@ def test_CompositionRotationsXYZ():
     np.testing.assert_almost_equal(point.get(R2, "p"), (f, d, e))
     np.testing.assert_almost_equal(point.get(R1, "p"), (f, -e, d))
     np.testing.assert_almost_equal(point.get(R0, "p"), (a + f, b - e, c + d))
+
+
+@pytest.mark.dependency(depends=["test_TranslatedPosition"])
+def test_VelocityPoint():
+    x = Variable("x")
+    R0 = FrameReference()
+    R1 = FrameReference(R0, translation=(x, 0, 0))
+    point = Object(R1)
+    np.testing.assert_almost_equal(point.get(R1, "v"), (0, 0, 0))
+    np.testing.assert_array_equal(point.get(R0, "v"), (x.dt, 0, 0))
+
+
+@pytest.mark.dependency(depends=["test_SetMass", "test_VelocityPoint"])
+def test_KineticEnergy():
+    m = 1
+    x = Variable("x")
+    R0 = FrameReference()
+    R1 = FrameReference(R0, translation=(x, 0, 0))
+    point = Object(R1)
+    point.mass = m
+
+    v = point.get(R1, "v")
+    E = point.KineticEnergy(R1)
+    assert E == m * np.dot(v, v) / 2
+
+    v = point.get(R0, "v")
+    E = point.KineticEnergy(R0)
+    assert E == m * np.dot(v, v) / 2

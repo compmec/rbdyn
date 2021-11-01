@@ -144,3 +144,27 @@ class ObjectKinematic(Kinematic):
     def II(self, value):
         Validation_ObjectKinematic.II(value)
         self._II = value
+
+    def get(self, element):
+        if element == "p":
+            return self.p
+        elif element == "v":
+            return self.v
+        elif element == "a":
+            return self.a
+        elif element == "r":
+            return self.r
+        elif element == "w":
+            return self.w
+        elif element == "q":
+            return self.q
+        elif element == "R":
+            return self.R
+        elif element == "W":
+            return self.W
+        elif element == "Q":
+            return self.Q
+        elif element == "CM":
+            return self.CM
+        elif element == "II":
+            return self.II

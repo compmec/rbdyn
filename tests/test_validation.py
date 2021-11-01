@@ -23,22 +23,25 @@ def test_Verify3DTensor():
     X = np.zeros((3, 3))
     validation.Verify3DTensor(X)
 
-    X = np.random.rand(3, 3)
+    X = np.eye(3)
     validation.Verify3DTensor(X)
+
+    X = np.random.rand(3, 3)
+    validation.Verify3DTensor(X + X.T)
 
 
 @pytest.mark.dependency(depends=["test_Verify3DTensor"])
-def test_VerifyAntiSymmetric():
+def test_VerifyAntiSymmetricMatrix():
     X = np.zeros((3, 3))
-    validation.VerifyAntiSymmetric(X)
+    validation.VerifyAntiSymmetricMatrix(X)
 
     X = np.random.rand(3, 3)
     Xsym = (X + X.T) / 2
     Xant = X - Xsym
-    validation.VerifyAntiSymmetric(Xant)
+    validation.VerifyAntiSymmetricMatrix(Xant)
 
     with pytest.raises(ValueError):
-        validation.VerifyAntiSymmetric(Xsym)
+        validation.VerifyAntiSymmetricMatrix(Xsym)
 
 
 @pytest.mark.dependency(depends=["test_Verify3DVector"])

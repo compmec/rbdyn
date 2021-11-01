@@ -1,4 +1,8 @@
 
+class VariableClass(object):
+    instances = []
+    names = []
+
 
 class KinematicClass(object):
     pass
