@@ -1,7 +1,7 @@
 import numpy as np
 import sympy as sp
 from rbdyn.kinematic import Kinematic
-from rbdyn.time import *
+from rbdyn import time
 from rbdyn.__classes__ import FrameReferenceClass
 from rbdyn.__validation__ import Validation_FrameReference, Validation_FrameComposition
 
@@ -25,7 +25,7 @@ class FrameReference(FrameReferenceClass):
             return self
 
     def __init(self, base, translation, rotation):
-        self.base = base
+        self.baseframe = base
         self._id = len(FrameReference.instances) - 1
         self._kine = Kinematic(init=False)
         if translation is None:
@@ -33,7 +33,16 @@ class FrameReference(FrameReferenceClass):
         if rotation is None:
             rotation = np.zeros(3)
         self._kine.p = translation
+        self._kine.v = np.zeros(3, dtype="object")
+        self._kine.a = np.zeros(3, dtype="object")
         self._kine.r = rotation
+        self._kine.w = np.zeros(3, dtype="object")
+        self._kine.q = np.zeros(3, dtype="object")
+        for i in range(3):
+            self._kine.v[i] = sp.diff(self._kine.p[i], time)
+            self._kine.a[i] = sp.diff(self._kine.v[i], time)
+            self._kine.w[i] = sp.diff(self._kine.r[i], time)
+            self._kine.q[i] = sp.diff(self._kine.w[i], time)
 
     @property
     def id(self):
@@ -61,7 +70,7 @@ class FrameReference(FrameReferenceClass):
 
     def string(self):
         msg = "FrameReference name: " + self.name + "\n"
-        basename = "None" if (self.base is None) else self.base.name
+        basename = "None" if (self.baseframe is None) else self.baseframe.name
         msg += "FrameReference base: %s\n" % basename
         msg += "Kinematic data:"
         msg += "    Linear: " + "\n"
