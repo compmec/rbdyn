@@ -2,7 +2,17 @@ import numpy as np
 import rbdyn.__classes__ as classes
 
 
-def Verify3DVector(value):
+def VerifyScalar(value):
+    if isinstance(value, (int, float)):
+        pass
+    if isinstance(value, (tuple, list)):
+        raise TypeError("The argument is not an scalar")
+
+    if np.array(value).ndim != 0:
+        raise ValueError("The argument is not an scalar")
+
+
+def VerifyConvertToNumpyArray(value):
     if isinstance(value, np.ndarray):
         pass
     elif isinstance(value, tuple):
@@ -10,50 +20,68 @@ def Verify3DVector(value):
     elif isinstance(value, list):
         pass
     else:
-        error = "The 3D Vector must be a numpy.ndarray/list/tuple not %s" % str(
-            type(value))
-        raise TypeError(error)
+        raise TypeError("The argument must be a numpy.ndarray/list/tuple")
+    try:
+        value = np.array(value)
+    except Exception as e:
+        error = "We cannot convert the argument to numpy array: cause %s"
+        raise ValueError(error % str(e))
 
+
+def VerifyIsVector(value):
+    VerifyConvertToNumpyArray(value)
     value = np.array(value)
     if value.ndim != 1:
-        raise ValueError("The ndim of 3D vector must be equal to 1!")
+        raise ValueError("The parameter must have ndim = 1")
+
+
+def VerifyIsMatrix(value):
+    VerifyConvertToNumpyArray(value)
+    value = np.array(value)
+    if value.ndim != 2:
+        raise ValueError("The given argument must be a matrix")
+
+
+def Verify3DVector(value):
+    VerifyIsVector(value)
     if len(value) != 3:
         raise ValueError("The 3D vector must have 3 elements!")
 
 
-def Verify3DTensor(value):
-    if isinstance(value, np.ndarray):
-        pass
-    elif isinstance(value, tuple):
-        pass
-    elif isinstance(value, list):
-        pass
-    else:
-        raise TypeError("The 3D Vector must be a numpy.ndarray/list/tuple")
+def VerifySquareMatrix(matrix):
+    VerifyIsMatrix(matrix)
+    matrix = np.array(matrix)
+    if matrix.shape[0] != matrix.shape[1]:
+        error = "The argument must be a square matrix. Shape = %s"
+        raise ValueError(error % str(matrix.shape))
 
+
+def VerifySymmetricMatrix(value):
+    VerifySquareMatrix(value)
     value = np.array(value)
-    if value.ndim != 2:
-        raise ValueError("The ndim of 3D tensor must be equal to 2!")
-    if value.shape != (3, 3):
+    zerostest = np.abs(value - np.transpose(value))
+    if np.any(zerostest > 1e-10):
+        raise ValueError("The given tensor is not SymmetricMatrix")
+
+
+def VerifyAntiSymmetricMatrix(value):
+    VerifySquareMatrix(value)
+    value = np.array(value)
+    zerostest = np.abs(value + np.transpose(value))
+    if np.any(zerostest > 1e-10):
+        raise ValueError("The given tensor is not AntiSymmetricMatrix")
+
+
+def VerifySquareMatrixSize3(value):
+    VerifySquareMatrix(value)
+    value = np.array(value)
+    if value.shape[0] != 3:
         raise ValueError("The 3D tensor must have 3x3 elements!")
 
 
-def VerifySymmetric(value):
-    value = np.array(value)
-    if value.ndim != 2:
-        raise ValueError("The given tensor must have ndim = 2")
-    zerostest = np.abs(value - np.transpose(value))
-    if np.any(zerostest > 1e-10):
-        raise ValueError("The given tensor is not Symmetric")
-
-
-def VerifyAntiSymmetric(value):
-    value = np.array(value)
-    if value.ndim != 2:
-        raise ValueError("The given tensor must have ndim = 2")
-    zerostest = np.abs(value + np.transpose(value))
-    if np.any(zerostest > 1e-10):
-        raise ValueError("The given tensor is not AntiSymmetric")
+def Verify3DTensor(value):
+    VerifySymmetricMatrix(value)
+    VerifySquareMatrixSize3(value)
 
 
 def VerifyUnit3DVector(value):
@@ -63,6 +91,8 @@ def VerifyUnit3DVector(value):
 
 
 def VerifyValidRotation(value):
+    VerifySquareMatrix(value)
+    VerifySquareMatrixSize3(value)
     R = np.array(value)
     RT = np.transpose(R)
     M = np.dot(RT, R)
@@ -88,6 +118,11 @@ def VerifyString(name):
 def VerifyKinematicClass(kine):
     if not isinstance(kine, classes.KinematicClass):
         raise TypeError("The argument must be a Kinematic instance")
+
+
+def VerifyFrameReference(frame):
+    if not isinstance(frame, classes.FrameReferenceClass):
+        raise TypeError("The argument must be a FrameReference instance")
 
 
 class Validation_Kinematic:
@@ -123,18 +158,31 @@ class Validation_Kinematic:
 
     @staticmethod
     def R(value):
-        Verify3DTensor(value)
+        VerifySquareMatrixSize3(value)
         VerifyValidRotation(value)
 
     @staticmethod
     def W(value):
-        Verify3DTensor(value)
-        VerifyAntiSymmetric(value)
+        VerifySquareMatrixSize3(value)
+        VerifyAntiSymmetricMatrix(value)
 
     @staticmethod
     def Q(value):
-        Verify3DTensor(value)
-        VerifyAntiSymmetric(value)
+        VerifySquareMatrixSize3(value)
+        VerifyAntiSymmetricMatrix(value)
+
+    @staticmethod
+    def element(element):
+        VALIDS = ("p", "v", "a", "r", "w", "q", "R", "W", "Q")
+        if not isinstance(element, str):
+            raise TypeError("The element must be a string")
+        if element not in VALIDS:
+            raise ValueError("The element must be in %s" % str(VALIDS))
+
+    @staticmethod
+    def get(frame, element):
+        VerifyFrameReference(frame)
+        Validation_Kinematic.element(element)
 
 
 class Validation_ObjectKinematic:
@@ -146,12 +194,25 @@ class Validation_ObjectKinematic:
     def II(value):
         Verify3DTensor(value)
 
+    @staticmethod
+    def get(frame, element):
+        VerifyFrameReference(frame)
+        Validation_ObjectKinematic.element(element)
+
+    @staticmethod
+    def element(element):
+        VALIDS = ("p", "v", "a", "r", "w", "q", "R", "W", "Q", "CM", "II")
+        if not isinstance(element, str):
+            raise TypeError("The element must be a string")
+        if element not in VALIDS:
+            raise ValueError("The element must be in %s" % str(VALIDS))
+
 
 class Validation_Compute:
     @staticmethod
     def Ux2u(Ux):
-        Verify3DTensor(Ux)
-        VerifyAntiSymmetric(Ux)
+        VerifySquareMatrixSize3(Ux)
+        VerifyAntiSymmetricMatrix(Ux)
 
     @staticmethod
     def u2Ux(u):
@@ -169,7 +230,7 @@ class Validation_Compute:
 
     @staticmethod
     def R2r(R):
-        Verify3DTensor(R)
+        VerifySquareMatrixSize3(R)
 
     @staticmethod
     def w2W(w):
@@ -177,8 +238,8 @@ class Validation_Compute:
 
     @staticmethod
     def W2w(W):
-        Verify3DTensor(W)
-        VerifyAntiSymmetric(W)
+        VerifySquareMatrixSize3(W)
+        VerifyAntiSymmetricMatrix(W)
 
     @staticmethod
     def q2Q(q):
@@ -186,8 +247,8 @@ class Validation_Compute:
 
     @staticmethod
     def Q2q(Q):
-        Verify3DTensor(Q)
-        VerifyAntiSymmetric(Q)
+        VerifySquareMatrixSize3(Q)
+        VerifyAntiSymmetricMatrix(Q)
 
 
 class Validation_Translation:
@@ -237,24 +298,22 @@ class Validation_Rotation:
 class Validation_FrameReference:
 
     @staticmethod
-    def init(base, translation, rotation):
-        if base is None:
+    def init(baseframe, translation, rotation):
+        if baseframe is None:
             if translation is not None:
-                raise ValueError("translation must be None when base is None")
+                raise ValueError(
+                    "translation must be None when baseframe is None")
             if rotation is not None:
-                raise ValueError("rotation must be None when base is None")
-        Validation_FrameReference.base(base)
+                raise ValueError(
+                    "rotation must be None when baseframe is None")
+        Validation_FrameReference.baseframe(baseframe)
         Validation_FrameReference.translation(translation)
         Validation_FrameReference.rotation(rotation)
 
     @staticmethod
-    def base(base):
-        if base is None:
-            pass
-        elif isinstance(base, classes.FrameReferenceClass):
-            pass
-        else:
-            raise TypeError("The base must be a FrameReference instance")
+    def baseframe(baseframe):
+        if baseframe is not None:
+            VerifyFrameReference(baseframe)
 
     @staticmethod
     def translation(translation):
@@ -268,32 +327,32 @@ class Validation_FrameReference:
 class Validation_FrameComposition:
 
     @staticmethod
-    def p1(kine01, kine1):
+    def p1(kine01, kine0):
         VerifyKinematicClass(kine01)
         VerifyKinematicClass(kine0)
 
     @staticmethod
-    def v1(kine01, kine1):
+    def v1(kine01, kine0):
         VerifyKinematicClass(kine01)
         VerifyKinematicClass(kine0)
 
     @staticmethod
-    def a1(kine01, kine1):
+    def a1(kine01, kine0):
         VerifyKinematicClass(kine01)
         VerifyKinematicClass(kine0)
 
     @staticmethod
-    def R1(kine01, kine1):
+    def R1(kine01, kine0):
         VerifyKinematicClass(kine01)
         VerifyKinematicClass(kine0)
 
     @staticmethod
-    def w1(kine01, kine1):
+    def w1(kine01, kine0):
         VerifyKinematicClass(kine01)
         VerifyKinematicClass(kine0)
 
     @staticmethod
-    def q1(kine01, kine1):
+    def q1(kine01, kine0):
         VerifyKinematicClass(kine01)
         VerifyKinematicClass(kine0)
 
@@ -343,19 +402,12 @@ class Validation_Object:
 
     @staticmethod
     def baseframe(baseframe):
-        Validation_Object.verifyFrame(baseframe)
+        VerifyFrameReference(baseframe)
 
     @staticmethod
     def name(name):
         if name is not None:
             VerifyString(name)
-
-    @staticmethod
-    def verifyFrame(frame):
-        if not isinstance(frame, classes.FrameReferenceClass):
-            error = "The given frame must be a FrameReference instance. Received %s" % str(
-                type(frame))
-            raise TypeError(error)
 
     @staticmethod
     def verifyElement(element):
@@ -381,13 +433,68 @@ class Validation_Object:
 
     @staticmethod
     def getCM(frame):
-        Validation_Object.verifyFrame(frame)
+        VerifyFrameReference(frame)
 
     @staticmethod
     def getII(frame):
-        Validation_Object.verifyFrame(frame)
+        VerifyFrameReference(frame)
 
     @staticmethod
     def get(frame, element):
-        Validation_Object.verifyFrame(frame)
+        VerifyFrameReference(frame)
         Validation_Object.verifyElement(element)
+
+
+class Validation_Variable:
+    @staticmethod
+    def init(name):
+        VerifyString(name)
+        if " " in name:
+            raise ValueError("The variable's name must not contain space")
+
+
+class Validation_Energy:
+    @staticmethod
+    def init(*args, **kwargs):
+        pass
+
+    @staticmethod
+    def shape1(array, n):
+        if array.shape[0] != n:
+            error = "The shape of parameter must be (%d) cause len(X) = %d"
+            raise AttributeError(error % (n, n))
+
+    @staticmethod
+    def shape2(array, n):
+        if array.shape[0] != n:
+            error = "The shape of parameter must be (%d, %d) cause len(X) = %d"
+            raise AttributeError(error % (n, n, n))
+
+    @staticmethod
+    def M(M, n):
+        VerifySymmetricMatrix(M)
+        Validation_Energy.shape2(M, n)
+
+    @staticmethod
+    def V(V, n):
+        VerifySquareMatrix(V)
+        Validation_Energy.shape2(V, n)
+
+    @staticmethod
+    def K(K, n):
+        VerifySymmetricMatrix(K)
+        Validation_Energy.shape2(K, n)
+
+    @staticmethod
+    def A(A, n):
+        VerifyIsVector(A)
+        Validation_Energy.shape1(A, n)
+
+    @staticmethod
+    def B(B, n):
+        VerifyIsVector(B)
+        Validation_Energy.shape1(B, n)
+
+    @staticmethod
+    def C(C):
+        VerifyScalar(C)
