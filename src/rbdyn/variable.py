@@ -1,6 +1,6 @@
 import sympy as sp
 from rbdyn.__classes__ import VariableClass
-# from rbdyn import time
+from rbdyn import time
 
 
 class Variable(VariableClass, sp.Function):
@@ -10,7 +10,6 @@ class Variable(VariableClass, sp.Function):
             index = Variable.names.index(name)
             return Variable.instances[index]
 
-        time = sp.symbols("t")
         self = sp.Function(name)(time)
         self.time = time
         self.dt = sp.diff(self, self.time)

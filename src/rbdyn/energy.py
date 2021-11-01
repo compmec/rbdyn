@@ -250,6 +250,8 @@ class Energy(EnergyClass):
         result += self.expr_C()
         if self._X is None:
             return result
+        if len(self._X) == 0:
+            return result
         result += self.expr_AdX()
         result += self.expr_BX()
         result += self.expr_dXMdX()
