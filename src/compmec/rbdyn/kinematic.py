@@ -1,8 +1,8 @@
 import numpy as np
 from numpy import linalg as la
-from rbdyn.__classes__ import KinematicClass
-from rbdyn.__validation__ import Validation_Kinematic, Validation_ObjectKinematic
-from rbdyn.composition import Compute
+from compmec.rbdyn.__classes__ import KinematicClass
+from compmec.rbdyn.__validation__ import Validation_Kinematic, Validation_ObjectKinematic
+from compmec.rbdyn.composition import Compute
 
 
 class Kinematic(KinematicClass):

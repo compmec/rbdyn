@@ -1,9 +1,9 @@
 import numpy as np
 import sympy as sp
-from rbdyn.kinematic import Kinematic
-from rbdyn import time
-from rbdyn.__classes__ import FrameReferenceClass
-from rbdyn.__validation__ import Validation_FrameReference, Validation_FrameComposition
+from compmec.rbdyn.kinematic import Kinematic
+from compmec.rbdyn import time
+from compmec.rbdyn.__classes__ import FrameReferenceClass
+from compmec.rbdyn.__validation__ import Validation_FrameReference, Validation_FrameComposition
 
 
 class FrameReference(FrameReferenceClass):

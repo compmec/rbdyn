@@ -1,5 +1,5 @@
 import numpy as np
-import rbdyn.__classes__ as classes
+import compmec.rbdyn.__classes__ as classes
 
 
 def VerifyScalar(value):

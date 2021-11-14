@@ -1,8 +1,8 @@
 import numpy as np
 import sympy as sp
-from rbdyn.__validation__ import Validation_Energy
-from rbdyn.__classes__ import EnergyClass
-from rbdyn.variable import Variable
+from compmec.rbdyn.__validation__ import Validation_Energy
+from compmec.rbdyn.__classes__ import EnergyClass
+from compmec.rbdyn.variable import Variable
 
 
 def KineticEnergy(mass, velocity):

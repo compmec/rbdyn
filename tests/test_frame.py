@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
-from rbdyn.__classes__ import FrameReferenceClass
-from rbdyn.frames import FrameReference
+from compmec.rbdyn.__classes__ import FrameReferenceClass
+from compmec.rbdyn.frames import FrameReference
 
 
 def getRandomUnit3DVector():

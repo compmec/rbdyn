@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from rbdyn.variable import Variable
+from compmec.rbdyn.variable import Variable
 
 
 @pytest.mark.dependency()

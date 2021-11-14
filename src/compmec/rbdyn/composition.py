@@ -1,6 +1,6 @@
 import numpy as np
 from numpy import linalg as la
-from rbdyn.__validation__ import Validation_Compute
+from compmec.rbdyn.__validation__ import Validation_Compute
 
 
 class Compute:

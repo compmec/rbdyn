@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from rbdyn.kinematic import Kinematic, ObjectKinematic
+from compmec.rbdyn.kinematic import Kinematic, ObjectKinematic
 
 
 @pytest.mark.dependency()

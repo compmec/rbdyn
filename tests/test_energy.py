@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
-from rbdyn.variable import Variable
-from rbdyn.energy import KineticEnergy, Energy
+from compmec.rbdyn.variable import Variable
+from compmec.rbdyn.energy import KineticEnergy, Energy
 
 
 def randomSymmetricMatrix(n):
