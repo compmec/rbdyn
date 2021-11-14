@@ -1,8 +1,8 @@
 import pytest
 import numpy as np
-from rbdyn.variable import Variable
-from rbdyn.object import Object
-from rbdyn.frames import FrameReference
+from compmec.rbdyn.variable import Variable
+from compmec.rbdyn.object import Object
+from compmec.rbdyn.frames import FrameReference
 
 
 @pytest.mark.dependency()

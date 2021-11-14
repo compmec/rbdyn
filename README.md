@@ -15,11 +15,11 @@ We can think a RBDyn problem as:
 
 An example is a connecting rod of a motor:
 
-<img src="https://raw.githubusercontent.com/carlos-adir/RigidBodyDynamics/master/docs/img/biela.gif" alt="biela" width="400"/>
+<img src="https://raw.githubusercontent.com/compmec/rbdyn/docs/img/biela.gif" alt="biela" width="400"/>
 
 So, this library does the simulation and returns the requested values: position, forces and so on.
 
-For more details, please see the page [RBDyn Problems][rbdynproblemlink] and our [Start Guide][startguidelink].
+For more details, please see our [Start Guide][startguidelink].
 
 
 ## Requirements and use
@@ -32,7 +32,7 @@ As requirements, we use Python with the following libraries:
 To use this library, you just need to install it using the command:
 
 ```
-pip install rbdyn
+pip install compmec-rbdyn
 ```
 
 Another way is clone the repository and installing it manually.

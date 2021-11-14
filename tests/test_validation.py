@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-import rbdyn.__validation__ as validation
+import compmec.rbdyn.__validation__ as validation
 
 
 def getRandomUnit3DVector():

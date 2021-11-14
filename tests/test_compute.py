@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from rbdyn.composition import Compute
+from compmec.rbdyn.composition import Compute
 
 
 def getRandomUnit3DVector():

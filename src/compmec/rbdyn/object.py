@@ -1,11 +1,11 @@
 import numpy as np
 import numpy.linalg as la
 import sympy as sp
-from rbdyn.__classes__ import ObjectClass
-from rbdyn.__validation__ import Validation_Object
-from rbdyn.kinematic import ObjectKinematic
-from rbdyn.frames import FrameReference, FrameComposition
-from rbdyn import energy
+from compmec.rbdyn.__classes__ import ObjectClass
+from compmec.rbdyn.__validation__ import Validation_Object
+from compmec.rbdyn.kinematic import ObjectKinematic
+from compmec.rbdyn.frames import FrameReference, FrameComposition
+from compmec.rbdyn import energy
 
 
 class Object(ObjectClass):

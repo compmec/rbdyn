@@ -1,6 +1,6 @@
 import sympy as sp
-from rbdyn.__classes__ import VariableClass
-from rbdyn import time
+from compmec.rbdyn.__classes__ import VariableClass
+from compmec.rbdyn import time
 
 
 class Variable(VariableClass, sp.Function):
