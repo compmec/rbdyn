@@ -6,32 +6,33 @@ from compmec.rbdyn.frames import FrameReference
 
 
 @pytest.mark.dependency()
+@pytest.mark.timeout(2)
 def test_Build():
     R0 = FrameReference()
     bar = Object(R0)
 
-
+@pytest.mark.timeout(2)
 @pytest.mark.dependency(depends=["test_Build"])
 def test_BuildWithName():
     R0 = FrameReference()
     bar = Object(R0, "bar")
     plate = Object(R0, name="plate")
 
-
+@pytest.mark.timeout(2)
 @pytest.mark.dependency(depends=["test_Build"])
 def test_SetMass():
     R0 = FrameReference()
     bar = Object(R0)
     bar.mass = 3
 
-
+@pytest.mark.timeout(2)
 @pytest.mark.dependency(depends=["test_Build"])
 def test_SetCenterMass():
     R0 = FrameReference()
     bar = Object(R0)
     bar.CM = (1, 2, 3)
 
-
+@pytest.mark.timeout(2)
 @pytest.mark.dependency(depends=["test_Build"])
 def test_SetInertia():
     R0 = FrameReference()
@@ -40,7 +41,7 @@ def test_SetInertia():
               (0, 1, 0),
               (0, 0, 1))
 
-
+@pytest.mark.timeout(2)
 @pytest.mark.dependency(depends=["test_Build"])
 def test_TranslatedPosition():
     R0 = FrameReference()
@@ -57,7 +58,7 @@ def test_TranslatedPosition():
     np.testing.assert_almost_equal(point3.get(R3, "p"), (0, 0, 0))
     np.testing.assert_almost_equal(point3.get(R0, "p"), (0, 0, 1))
 
-
+@pytest.mark.timeout(2)
 @pytest.mark.dependency(depends=["test_Build"])
 def test_RotationedPosition():
     R0 = FrameReference()
@@ -68,7 +69,7 @@ def test_RotationedPosition():
     np.testing.assert_almost_equal(point.get(R1, "p"), (1, 0, 0))
     np.testing.assert_almost_equal(point.get(R0, "p"), (0, 1, 0))
 
-
+@pytest.mark.timeout(2)
 @pytest.mark.dependency(depends=["test_TranslatedPosition"])
 def test_CompositionTranslation():
     R0 = FrameReference()
@@ -81,7 +82,7 @@ def test_CompositionTranslation():
     np.testing.assert_almost_equal(point.get(R1, "p"), (0, 1, 1))
     np.testing.assert_almost_equal(point.get(R0, "p"), (1, 1, 1))
 
-
+@pytest.mark.timeout(2)
 @pytest.mark.dependency(depends=["test_RotationedPosition"])
 def test_CompositionRotationsZ():
     a, b, c = np.random.rand(3)
@@ -114,7 +115,7 @@ def test_CompositionRotationsXYZ():
     np.testing.assert_almost_equal(point.get(R1, "p"), (f, -e, d))
     np.testing.assert_almost_equal(point.get(R0, "p"), (a + f, b - e, c + d))
 
-
+@pytest.mark.timeout(2)
 @pytest.mark.dependency(depends=["test_TranslatedPosition"])
 def test_VelocityPoint():
     x = Variable("x")
@@ -124,7 +125,7 @@ def test_VelocityPoint():
     np.testing.assert_almost_equal(point.get(R1, "v"), (0, 0, 0))
     np.testing.assert_array_equal(point.get(R0, "v"), (x.dt, 0, 0))
 
-
+@pytest.mark.timeout(2)
 @pytest.mark.dependency(depends=["test_SetMass", "test_VelocityPoint"])
 def test_KineticEnergy():
     m = 1

@@ -11,16 +11,19 @@ def getRandomUnit3DVector():
 
 
 @pytest.mark.dependency()
+@pytest.mark.timeout(2)
 def test_BuildInertialFrame():
     R0 = FrameReference()  # Inertial Frame of Reference
 
 
+@pytest.mark.timeout(2)
 @pytest.mark.dependency(depends=["test_BuildInertialFrame"])
 def test_BuildSecondFrame():
     R0 = FrameReference()
     R1 = FrameReference(R0)
 
 
+@pytest.mark.timeout(2)
 @pytest.mark.dependency(depends=["test_BuildSecondFrame"])
 def test_BuildTranslatedFrame_standard():
     R0 = FrameReference()
@@ -33,6 +36,7 @@ def test_BuildTranslatedFrame_standard():
     R7 = FrameReference(R0, translation=(0, 1, 1))
 
 
+@pytest.mark.timeout(2)
 @pytest.mark.dependency(depends=["test_BuildTranslatedFrame_standard"])
 def test_BuildTranslatedFrame_random():
     R0 = FrameReference()
@@ -42,6 +46,7 @@ def test_BuildTranslatedFrame_random():
         Ri = FrameReference(R0, translation=translation)
 
 
+@pytest.mark.timeout(2)
 @pytest.mark.dependency(depends=["test_BuildSecondFrame"])
 def test_BuildRotatedFrame_standard():
     R0 = FrameReference()
@@ -65,7 +70,7 @@ def test_BuildRotatedFrame_standard():
     R8 = FrameReference(R0, rotation=(2 * np.pi, (0, 1, 0)))
     R9 = FrameReference(R0, rotation=(2 * np.pi, (0, 0, 1)))
 
-
+@pytest.mark.timeout(20)
 @pytest.mark.dependency(depends=["test_BuildRotatedFrame_standard"])
 def test_BuildRotatedFrame_random():
     R0 = FrameReference()
@@ -76,7 +81,7 @@ def test_BuildRotatedFrame_random():
         rotation = (angle, direction)
         Ri = FrameReference(R0, rotation=rotation)
 
-
+@pytest.mark.timeout(20)
 @pytest.mark.dependency(depends=["test_BuildTranslatedFrame_random", "test_BuildRotatedFrame_random"])
 def test_BuildTranslatedAndRotatedFrame_random():
     R0 = FrameReference()

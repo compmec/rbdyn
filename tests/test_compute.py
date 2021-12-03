@@ -18,6 +18,7 @@ def randomNumberBetween(a, b):
     return a + diff * np.random.rand()
 
 
+@pytest.mark.timeout(2)
 def test_Ux2u():
     Ux = np.zeros((3, 3))
     ugood = np.zeros(3)
@@ -45,7 +46,7 @@ def test_Ux2u():
     utest = Compute.Ux2u(Ux)
     np.testing.assert_almost_equal(utest, ugood)
 
-
+@pytest.mark.timeout(2)
 def test_u2Ux():
     u = np.zeros(3)
     Uxgood = np.zeros((3, 3))
@@ -73,7 +74,7 @@ def test_u2Ux():
     Uxtest = Compute.u2Ux(u)
     np.testing.assert_almost_equal(Uxtest, Uxgood)
 
-
+@pytest.mark.timeout(20)
 def test_u2Ux2u():
     Ntests = 1
     for i in range(Ntests):
@@ -82,7 +83,7 @@ def test_u2Ux2u():
         utest = Compute.Ux2u(Ux)
         np.testing.assert_almost_equal(utest, ugood)
 
-
+@pytest.mark.timeout(2)
 @pytest.mark.dependency()
 def test_R_standard():
     angle = np.pi / 2
@@ -134,6 +135,7 @@ def test_R_standard():
     np.testing.assert_almost_equal(Rtest, Rgood)
 
 
+@pytest.mark.timeout(10)
 @pytest.mark.dependency(depends=["test_R_standard"])
 def test_R_random():
     Ntests = 100
@@ -151,7 +153,7 @@ def test_R_random():
         M = np.dot(R, RT)
         np.testing.assert_almost_equal(M, np.eye(3))
 
-
+@pytest.mark.timeout(2)
 @pytest.mark.dependency(depends=["test_R_standard", "test_R_random"])
 def test_r2R_standard():
     r = np.zeros(3)
@@ -159,10 +161,10 @@ def test_r2R_standard():
     Rtest = Compute.r2R(r)
     np.testing.assert_almost_equal(Rtest, Rgood)
 
-
+@pytest.mark.timeout(20)
 @pytest.mark.dependency(depends=["test_r2R_standard"])
 def test_r2R_random():
-    Ntests = 1000
+    Ntests = 100
     for i in range(Ntests):
         angle = randomNumberBetween(-np.pi, np.pi)
         u = getRandomUnit3DVector()
@@ -171,7 +173,7 @@ def test_r2R_random():
         Rtest = Compute.r2R(r)
         np.testing.assert_almost_equal(Rtest, Rgood)
 
-
+@pytest.mark.timeout(2)
 @pytest.mark.dependency(depends=["test_R_standard", "test_R_random"])
 def test_R2r_standard():
     R = np.eye(3)
@@ -179,7 +181,7 @@ def test_R2r_standard():
     rtest = Compute.R2r(R)
     np.testing.assert_almost_equal(rtest, rgood)
 
-
+@pytest.mark.timeout(20)
 @pytest.mark.dependency(depends=["test_R2r_standard"])
 def test_R2r_random():
     Ntests = 1000

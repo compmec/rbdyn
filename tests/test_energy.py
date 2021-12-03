@@ -10,11 +10,13 @@ def randomSymmetricMatrix(n):
 
 
 @pytest.mark.dependency()
+@pytest.mark.timeout(2)
 def test_Build():
     Energy()
 
 
 @pytest.mark.dependency(depends=["test_Build"])
+@pytest.mark.timeout(2)
 def test_Constant():
     Ntests = 10
     for i in range(Ntests):
@@ -24,6 +26,7 @@ def test_Constant():
 
 
 @pytest.mark.dependency(depends=["test_Constant"])
+@pytest.mark.timeout(2)
 def test_LinearPosition():
     Ntests = 10
     x = Variable("x")
@@ -34,6 +37,7 @@ def test_LinearPosition():
 
 
 @pytest.mark.dependency(depends=["test_Constant"])
+@pytest.mark.timeout(2)
 def test_LinearSpeed():
     Ntests = 10
     x = Variable("x")
@@ -45,6 +49,7 @@ def test_LinearSpeed():
 
 
 @pytest.mark.dependency(depends=["test_LinearPosition"])
+@pytest.mark.timeout(2)
 def test_QuadPosition():
     Ntests = 10
     x = Variable("x")
@@ -55,6 +60,7 @@ def test_QuadPosition():
 
 
 @pytest.mark.dependency(depends=["test_LinearPosition", "test_LinearSpeed"])
+@pytest.mark.timeout(2)
 def test_QuadPositionSpeed():
     Ntests = 10
     x = Variable("x")
@@ -66,6 +72,7 @@ def test_QuadPositionSpeed():
 
 
 @pytest.mark.dependency(depends=["test_LinearSpeed"])
+@pytest.mark.timeout(2)
 def test_QuadSpeed():
     Ntests = 10
     x = Variable("x")
@@ -77,6 +84,7 @@ def test_QuadSpeed():
 
 
 @pytest.mark.dependency(depends=["test_LinearPosition", "test_LinearSpeed"])
+@pytest.mark.timeout(2)
 def test_Linear():
     Ntests = 10
     x = Variable("x")
@@ -91,6 +99,7 @@ def test_Linear():
 
 
 @pytest.mark.dependency(depends=["test_QuadPosition", "test_QuadPositionSpeed", "test_QuadSpeed"])
+@pytest.mark.timeout(2)
 def test_Quad():
     Ntests = 10
     x = Variable("x")
@@ -105,6 +114,7 @@ def test_Quad():
 
 
 @pytest.mark.dependency(depends=["test_Linear", "test_Quad"])
+@pytest.mark.timeout(20)
 def test_AllQuantity():
     Ntests = 10
     x = Variable("x")
