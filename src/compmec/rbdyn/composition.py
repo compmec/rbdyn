@@ -1,6 +1,64 @@
 import numpy as np
+import sympy as sp
 from numpy import linalg as la
-from compmec.rbdyn.__validation__ import Validation_Compute
+from compmec.rbdyn.__validation__ import Validation_Compute, IS
+
+
+def cos(x):
+    if isinstance(x, sp.core.basic.Basic):
+        c = sp.cos(x)
+        c = sp.expand_trig(c)
+        c = sp.simplify(c)
+        c = sp.trigsimp(c)
+        return c
+    else:
+        return np.cos(x)
+
+def sin(x):
+    if isinstance(x, sp.core.basic.Basic):
+        s = sp.sin(x)
+        s = sp.expand_trig(s)
+        s = sp.simplify(s)
+        s = sp.trigsimp(s)
+        return s
+    else:
+        return np.sin(x)
+
+def arccos(x):
+    if isinstance(x, sp.core.basic.Basic):
+        return sp.simplify(sp.acos(x))
+    else:
+        return np.arccos(x)
+
+def sqrt(x):
+    if isinstance(x, sp.core.basic.Basic):
+        return sp.simplify(sp.sqrt(x))
+    else:
+        return np.sqrt(x)    
+
+def norm(x):
+    if IS.NumericValue(x):
+        return la.norm(x)
+    if SymbolicValue(x):
+        RF = sp.physics.vector.ReferenceFrame("M")
+        vector = x[0] * RF.x + x[1]*RF.y + x[2]*RF.z
+        no = sp.sqrt(sp.physics.vector.dot(vector, vector))
+        no = sp.simplify(no)
+        return no
+
+def unitizevector(x):
+    if IS.NumericValue(x):
+        return x/la.norm(x)
+    else:
+        if x[0] == 0 and x[1] == 0:
+            return np.array((0, 0, 1))
+        elif x[0] == 0 and x[2] == 0:
+            return np.array((0, 1, 0))
+        elif x[1] == 0 and x[2] == 0:
+            return np.array((1, 0, 0))
+        else:
+            return x/norm(x)
+
 
 
 class Compute:
@@ -73,8 +131,9 @@ class Compute:
 
     @staticmethod
     def _R(angle, u):
-        c = np.cos(angle)
-        s = np.sin(angle)
+        c = cos(angle)
+        s = sin(angle)
+            
         if isinstance(u, str):
             pass
         elif np.all(u == (1, 0, 0)):
@@ -115,7 +174,7 @@ class Compute:
 
     @staticmethod
     def _r2R(r):
-        angle = la.norm(r)
+        angle = norm(r)
         if angle != 0:
             u = r / angle
             return Compute.R(angle, u)
@@ -127,8 +186,7 @@ class Compute:
         tr = np.trace(R)
         if tr == 3:
             return np.zeros(3)
-        angle = np.arccos((tr - 1) / 2)
+        angle = arccos((tr - 1) / 2)
         v = Compute._Ux2u(R)
-        norm_v = la.norm(v)
-        u = v / norm_v
+        u = unitizevector(v)
         return angle * u
