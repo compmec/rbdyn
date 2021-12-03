@@ -1,6 +1,5 @@
-from compmec.rbdyn.__classes__ import ForceBaseClass 
+from compmec.rbdyn.__classes__ import timesymb, ForceBaseClass 
 from compmec.rbdyn.__validation__ import Validation_Force 
-from compmec.rbdyn import time 
 import numpy as np 
 import sympy as sp 
  
@@ -8,7 +7,7 @@ import sympy as sp
 class Force(ForceBaseClass): 
     def __init__(self, F, X): 
         Validation_Force.init(self, F, X) 
-        self.t = time 
+        self.t = timesymb
         self.X = sp.Array(X) 
         self.dX = sp.Array([x.dt for x in self.X]) 
         self.F = sp.Array(F) 

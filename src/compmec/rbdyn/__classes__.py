@@ -1,6 +1,6 @@
 import sympy
 
-time = sympy.symbols("t", real=True, positive=True)
+timesymb = sympy.symbols("t", real=True, positive=True)
 pi = sympy.pi
 
 class VariableBaseClass(object):

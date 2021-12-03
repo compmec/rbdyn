@@ -1,5 +1,5 @@
 import sympy as sp
-from compmec.rbdyn.__classes__ import time, VariableBaseClass
+from compmec.rbdyn.__classes__ import timesymb, VariableBaseClass
 from compmec.rbdyn.__validation__ import Validation_Variable, Validation_VariableList
 
 
@@ -40,9 +40,9 @@ class Variable(VariableBaseClass):
 
     @classmethod
     def __createnew(cls, name):
-        x = sp.Function(name)(time)
-        dx = sp.diff(x, time)
-        ddx = sp.diff(dx, time)
+        x = sp.Function(name)(timesymb)
+        dx = sp.diff(x, timesymb)
+        ddx = sp.diff(dx, timesymb)
         x.dt = dx
         x.ddt = ddx
         cls.X.append(x)

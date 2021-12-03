@@ -1,6 +1,5 @@
-import sympy as sp 
-import numpy as np 
-from compmec.rbdyn import time 
+import sympy as sp
+import numpy as np
 from compmec.rbdyn import energy 
 from compmec.rbdyn.__validation__ import Validation_LagrangianMatrix, Validation_Lagrangian 
  
