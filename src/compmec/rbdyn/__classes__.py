@@ -1,20 +1,22 @@
+import sympy
 
-class VariableClass(object):
-    instances = []
-    names = []
+time = sympy.symbols("t", real=True, positive=True)
+pi = sympy.pi
 
+class VariableBaseClass(object):
+	pass
 
-class KinematicClass(object):
+class KinematicBaseClass(object):
     pass
 
-
-class FrameReferenceClass(object):
-    instances = []
-
-
-class ObjectClass(object):
-    instances = []
-
-
-class EnergyClass(object):
+class FrameReferenceBaseClass(object):
     pass
+
+class ObjectBaseClass(object):
+    pass
+
+class EnergyBaseClass(object):
+    pass
+
+class ForceBaseClass(object):
+	pass		
