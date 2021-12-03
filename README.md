@@ -1,13 +1,15 @@
 # Rigid Body Dynamics
 
+[![PyPi Version](https://img.shields.io/pypi/v/compmec-rbdyn.svg?style=flat-square)](https://pypi.org/project/compmec-rbdyn/)
+[![PyPI pyversions](https://img.shields.io/pypi/pyversions/compmec-rbdyn.svg?style=flat-square)](https://pypi.org/project/compmec-rbdyn/)
 ![Tests](https://github.com/compmec/rbdyn/actions/workflows/tests.yml/badge.svg)
 
 ## Rigid Body Dynamics problems
 
-We can think a RBDyn problem as:
+RBDyn problems are described as:
 
-* We have some ```rigid objects``` in the space
-* We know the relation between the objects
+* There are some ```rigid objects``` in the space
+* The relation between the objects is known
 * We know the initial condition for each object.
 * We want the values in further times:
     * Kinematic: ```position```, ```velocity``` and ```acceleration```
@@ -22,20 +24,20 @@ So, this library does the simulation and returns the requested values: position,
 For more details, please see our [Start Guide][startguidelink].
 
 
-## Requirements and use
+## Installation
 
-As requirements, we use Python with the following libraries:
+We use ```python``` with the following libraries:
 
 * [numpy][numpy_website]: Used for vector calculs
 * [sympy][sympy_website]: Used to calculate the algebric derivative
 
-To use this library, you just need to install it using the command:
+This library is available in [PyPI][pypilink]. To install it just enter the line
 
 ```
 pip install compmec-rbdyn
 ```
 
-Another way is clone the repository and installing it manually.
+Or install it manually
 
 ```
 git clone https://github.com/compmec/rbdyn
@@ -51,12 +53,11 @@ pytest
 
 ## Documentation
 
-All the documentation is in [our wiki][github_wiki], with usage and examples.
+All the documentation is in [our wiki][github_wiki], with [theory][theorylink] and [examples][exempleslink].
 
 ## Contribuition
 
-Please refer to the email ```carlos.adir.leite@gmail.com```.
-I'm still new using GitHub tools.
+Please use the [Issues][issueslink] or refer to the email ```compmecgit@gmail.com```
 
 [rbdynproblemlink]: https://github.com/compmec/rbdyn/wiki/RBDyn-problem
 [wikipedialink]: https://en.wikipedia.org/w/index.php?title=Inertial_frame_of_reference&oldid=1050743548
@@ -66,3 +67,7 @@ I'm still new using GitHub tools.
 [pytestlink]: https://docs.pytest.org/
 [anaconda_website]: https://www.anaconda.com/
 [github_wiki]: https://github.com/carlos-adir/RigidBodyDynamics/wiki
+[pypilink]: https://pypi.org/project/compmec-rbdyn/
+[theorylink]: https://github.com/compmec/rbdyn/wiki/Theory
+[exempleslink]: https://github.com/compmec/rbdyn/wiki/Exemples
+[issueslink]: https://github.com/compmec/rbdyn/issues
