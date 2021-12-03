@@ -1,8 +1,22 @@
 import numpy as np
 import sympy as sp
-from compmec.rbdyn.__validation__ import Validation_Energy
-from compmec.rbdyn.__classes__ import EnergyClass
-from compmec.rbdyn.variable import Variable
+from compmec.rbdyn.__validation__ import Validation_Energy, Validation_EnergyMatrix
+from compmec.rbdyn.__classes__ import EnergyBaseClass
+from compmec.rbdyn.variable import Variable, VariableList
+
+
+def MatrixSymbolicFunction1(name, n):
+    M = np.zeros(n, dtype="object")  
+    for i in range(n):
+        M[i] = sp.Function(f"{name}{i}")
+    return sp.MutableDenseNDimArray(M)
+
+def MatrixSymbolicFunction2(name, n, m):
+    M = np.zeros((n, n), dtype="object")
+    for i in range(n):
+        for j in range(m):
+            M[i, j] = sp.Function(f"{name}{i}{j}")
+    return sp.MutableDenseNDimArray(M)
 
 
 def KineticEnergy(mass, velocity):
@@ -10,22 +24,136 @@ def KineticEnergy(mass, velocity):
     Receives mass as an scalar, velocity as a 3D vector
     And returns a Energy instance, with Kinetic Energy calculated
     """
-    listvariables = []
-    for j in range(3):
-        for var in sp.sympify(velocity[j]).atoms(sp.Function):
-            if var not in listvariables:
-                listvariables.append(var)
-    X = Variable.sort(listvariables)
-    V = np.zeros((len(X), 3), dtype="object")
-    for i, xi in enumerate(X):
-        dvar = xi.dt
-        for j in range(3):
-            V[i, j] = sp.diff(velocity[j], dvar)
-    M = mass * np.dot(V, V.T)
-    return Energy(X=X, M=M)
+    return Energy.Kinetic(mass, velocity)
+
+class EnergyMatrix(EnergyBaseClass):
+    validaiton = Validation_EnergyMatrix
+    
+    @property
+    def X(self):
+        return self._X
+
+    @property
+    def dX(self):
+        if self.X is None:
+            return None
+        return sp.Array([x.dt for x in self.X])
+
+    @property
+    def n(self):
+        if self.X is None:
+            return 0
+        return len(self.X)
+    
+    
+    @property
+    def M(self):
+        return self._M
+
+    @property
+    def V(self):
+        return self._V
+    
+    @property
+    def K(self):
+        return self._K    
+    
+    @property
+    def A(self):
+        return self._A
+    
+    @property
+    def B(self):
+        return self._B    
+    
+    @property
+    def C(self):
+        return self._C
+
+    @X.setter
+    def X(self, value):
+        self.validation.Xsetter(self, value)
+        if value is None:
+            self._X = None
+        elif len(value) == 0:
+            self._X = None
+        else:
+            value = VariableList(value)
+            self._X = sp.Array(value)
+    
+    @M.setter
+    def M(self, value):
+        self.validation.Msetter(self, value)
+        if value is None:
+            if self.X is None:
+                self._M = None
+            else:
+                self._M = sp.Array(np.zeros((self.n, self.n), dtype="int32"))
+        else:
+            self._M = sp.Array(value)
+            self._M = sp.nsimplify(self._M, tolerance=1e-6, rational=True)
+
+    
+    @V.setter
+    def V(self, value):
+        self.validation.Vsetter(self, value)
+        if value is None:
+            if self.X is None:
+                self._V = None
+            else:
+                self._V = sp.Array(np.zeros((self.n, self.n), dtype="int32"))
+        else:
+            self._V = sp.Array(value)
+            self._V = sp.nsimplify(self._V, tolerance=1e-6, rational=True)
+
+    @K.setter
+    def K(self, value):
+        self.validation.Ksetter(self, value)
+        if value is None:
+            if self.X is None:
+                self._K = None
+            else:
+                self._K = sp.Array(np.zeros((self.n, self.n), dtype="int32"))
+        else:
+            self._K = sp.Array(value)
+            self._K = sp.nsimplify(self._K, tolerance=1e-6, rational=True)
+
+    @A.setter
+    def A(self, value):
+        self.validation.Asetter(self, value)
+        if value is None:
+            if self.X is None:
+                self._A = None
+            else:
+                self._A = sp.Array(np.zeros(self.n, dtype="int32"))
+        else:
+            self._A = sp.Array(value)
+            self._A = sp.nsimplify(self._A, tolerance=1e-6, rational=True)
+
+    @B.setter
+    def B(self, value):
+        self.validation.Bsetter(self, value)
+        if value is None:
+            if self.X is None:
+                self._B = None
+            else:
+                self._B = sp.Array(np.zeros(self.n, dtype="int32"))
+        else:
+            self._B = sp.Array(value)
+            self._B = sp.nsimplify(self._B, tolerance=1e-6, rational=True)
+
+    
+    @C.setter
+    def C(self, value):
+        self.validation.Csetter(self, value)
+        if value is None:
+            self._C = 0
+        else:
+            self._C = sp.nsimplify(value, tolerance=1e-6, rational=True)
+            self._C = sp.sympify(self._C)
 
 
-class Energy(EnergyClass):
+class Energy(EnergyMatrix, EnergyBaseClass):
     """
     This class will store the energy
     There are some types of energy: Kinetic and Potential
@@ -45,199 +173,133 @@ class Energy(EnergyClass):
     If there are any non-linear terms, it will be inside the 
         [M], [V], [K], [A], [B] and C
     """
+    validation = Validation_Energy
 
-    def __init__(self, *args, **kwargs):
-        self._X = None
-        self._dX = None
-        self._M = None
-        self._K = None
-        self._V = None
-        self._A = None
-        self._B = None
-        self._C = 0
-        if len(args) == 1 and len(kwargs) == 0:
-            # We expect an expression
-            expression = args[0]
-            self.__init__transformExpression(expression)
-        if len(kwargs) > 0:
-            if not "X" in kwargs:
-                raise ValueError("You must pass X when you use kwargs")
-            self.X = kwargs["X"]
-            if "M" in kwargs:
-                self.M = kwargs["M"]
-            if "V" in kwargs:
-                self.V = kwargs["V"]
-            if "K" in kwargs:
-                self.K = kwargs["K"]
-            if "A" in kwargs:
-                self.A = kwargs["A"]
-            if "B" in kwargs:
-                self.B = kwargs["B"]
-            if "C" in kwargs:
-                self.C = kwargs["C"]
+    def __init__(self, expression):
+        self.validation.init(self, expression)
+        self.__init(expression)
 
-    @property
-    def X(self):
-        if self._X is None:
-            raise AttributeError("You must initialize X")
-        return self._X
+    def __init(self, expression):
+        expression = sp.expand(sp.sympify(expression))
+        self.X = VariableList.fromexpression(expression)
+        self.M = None
+        self.V = None
+        self.K = None
+        self.A = None
+        self.B = None
+        self.C = None
+        self.__init__transformExpression(expression)
+        
 
-    @property
-    def dX(self):
-        if self._dX is None:
-            raise AttributeError("You must initialize X")
-        return self._dX
+        
 
-    @X.setter
-    def X(self, value):
-        if not isinstance(value, tuple):
-            try:
-                value = tuple(value)
-            except Exception as e:
-                error = "X must be a tuple, not '%s'"
-                raise TypeError(error % str(type(value)))
-        for i, var in enumerate(value):
+    @classmethod
+    def frommatrix(cls, *, X, M=None, V=None, K=None, A=None, B=None, C=None):
+        cls.validation.frommatrix(cls, X, M, V, K, A, B, C)
+        return cls.__frommatrix(X, M, V, K, A, B, C)
 
-            if not isinstance(var, sp.core.function.Basic):
-                error = "Each one inside X must be a Variable instance, not %s"
-                raise TypeError(error % type(var))
-        self._X = []
-        self._dX = []
-        for i, var in enumerate(value):
-            self._X.append(var)
-            self._dX.append(var.dt)
-        self._X = tuple(self._X)
-        self._dX = tuple(self._dX)
+    @classmethod
+    def __frommatrix(cls, X, M, V, K, A, B, C):
+        self = object.__new__(cls)
+        self.X = X
+        self.M = M
+        self.V = V
+        self.K = K
+        self.A = A
+        self.B = B
+        self.C = C
+        return self
 
-    @property
-    def M(self):
-        return self._M
+    @classmethod
+    def Kinetic(cls, mass, velocity):
+        cls.validation.Kinetic(cls, mass, velocity)
+        return cls.__Kinetic(mass, velocity)
 
-    @M.setter
-    def M(self, value):
-        Validation_Energy.M(value, len(self.X))
-        self._M = value
+    @classmethod
+    def __Kinetic(cls, mass, velocity):
+        listvars = []
 
-    @property
-    def K(self):
-        return self._K
+        velocity = sp.Array(velocity)
+        X = VariableList.fromexpression(velocity)
+        if len(X) == 0:
+            return cls.__frommatrix(X=None, M=None, V=None, K=None, A=None, B=None, C=None)
+        
+        dX = sp.Array([x.dt for x in X])
+        v = sp.diff(velocity, dX)
+        v = np.array(v)
+        M = mass * np.dot(v, v.T)
+        M = sp.Array(M)
+        
+        return cls.__frommatrix(X=X, M=M,V=None, K=None, A=None,B=None,C=None)
 
-    @K.setter
-    def K(self, value):
-        Validation_Energy.K(value, len(self.X))
-        self._K = value
-
-    @property
-    def V(self):
-        return self._V
-
-    @V.setter
-    def V(self, value):
-        Validation_Energy.V(value, len(self.X))
-        self._V = value
-
-    @property
-    def A(self):
-        return self._A
-
-    @A.setter
-    def A(self, value):
-        Validation_Energy.A(value, len(self.X))
-        self._A = value
-
-    @property
-    def B(self):
-        return self._B
-
-    @B.setter
-    def B(self, value):
-        Validation_Energy.B(value, len(self.X))
-        self._B = value
-
-    @property
-    def C(self):
-        return self._C
-
-    @C.setter
-    def C(self, value):
-        Validation_Energy.C(value)
-        self._C = value
+        
 
     def __init__transformExpression(self, expression):
-        listvariables = sp.sympify(expression).atoms(sp.Function)
-        self.X = Variable.sort(listvariables)
-        n = len(listvariables)
-        if n:
-            self.__computeM(expression)
-            self.__computeK(expression)
-            self.__computeV(expression)
-            self.__computeA(expression)
-            self.__computeB(expression)
-        self.__computeC(expression)
+        if self.n:
+            self.__compute_expression(expression)
+        else:
+            self.C = expression
 
-    def __computeM(self, expression):
-        n = len(self.X)
-        M = np.zeros((n, n), dtype="object")  # If we have kinetic energy
-        for i in range(n):
-            dE = sp.diff(expression, self.dX[i])
-            M[i, i] = sp.diff(dE, self.dX[i])
-            for j in range(i + 1, n):
-                M[i, j] = sp.diff(dE, self.dX[j]) / 2
-                M[j, i] = M[i, j]
-        if not np.all(M == 0):
-            self._M = M
+    def __compute_expression(self, expression):
+        A = sp.MutableDenseNDimArray(np.zeros(self.n))
+        B = sp.MutableDenseNDimArray(np.zeros(self.n))
+        M = sp.MutableDenseNDimArray(np.zeros((self.n, self.n)))
+        V = sp.MutableDenseNDimArray(np.zeros((self.n, self.n)))
+        K = sp.MutableDenseNDimArray(np.zeros((self.n, self.n)))
+        C = sp.Function("C")(*tuple(self.X))
 
-    def __computeK(self, expression):
-        n = len(self.X)
-        K = np.zeros((n, n), dtype="object")  # If we have kinetic energy
-        for i in range(n):
-            dE = sp.diff(expression, self.X[i])
-            K[i, i] = sp.diff(dE, self.X[i])
-            for j in range(i + 1, n):
-                K[i, j] = sp.diff(dE, self.X[j]) / 2
-                K[j, i] = K[i, j]
-        if not np.all(K == 0):
-            self._K = K
+        all_variables = [C]
+        equations = []
+        for i in range(self.n):
+            A[(i,)] = sp.Function(f"A{i}")(*tuple(self.X))
+            B[(i,)] = sp.Function(f"B{i}")(*tuple(self.X))
+            all_variables.append(A[(i,)])
+            all_variables.append(B[(i,)])
+            for j in range(self.n):
+                M[i, j] = sp.Function(f"M{i}{j}")(*tuple(self.X))
+                V[i, j] = sp.Function(f"V{i}{j}")(*tuple(self.X))
+                K[i, j] = sp.Function(f"K{i}{j}")(*tuple(self.X))
+                all_variables.append(M[i, j])
+                all_variables.append(V[i, j])
+                all_variables.append(K[i, j])
+        for i in range(self.n):
+            for j in range(i+1, self.n):
+                equations.append(M[i, j] - M[j, i])
+                equations.append(K[i, j] - K[j, i])
 
-    def __computeV(self, expression):
-        n = len(self.X)
-        V = np.zeros((n, n), dtype="object")  # If we have kinetic energy
-        for i, dxi in enumerate(self.dX):
-            dE = sp.diff(expression, dxi)
-            for j, xj in enumerate(self.X):
-                V[i, j] = sp.diff(dE, xj)
-        if not np.all(V == 0):
-            self._V = V
+        Esup = C
+        for i in range(self.n):
+            Esup += A[(i,)]*self.dX[i]
+            Esup += B[(i,)]*self.X[i]
+            for j in range(self.n):
+                Esup += M[i, j]*self.dX[i]*self.dX[j]
+                Esup += V[i, j]*self.dX[i]*self.X[j]
+                Esup += K[i, j]*self.X[i]*self.X[j]
+        poly = sp.Poly(Esup-expression, list(self.X)+list(self.dX))
+        equations += poly.coeffs()
+        solution = sp.solve(equations, all_variables)
+        if solution == []:
+            raise ValueError("Could not find solution to get the expression")
+        C = C.subs(solution.items())
+        for var, val in solution.items():
+            # C = C.subs(var, val)
+            for i in range(self.n):
+                A[(i,)] = A[(i,)].subs(var, val)
+                B[(i,)] = B[(i,)].subs(var, val)
+                for j in range(self.n):
+                    M[i, j] = M[i, j].subs(var, val)
+                    V[i, j] = V[i, j].subs(var, val)
+                    K[i, j] = K[i, j].subs(var, val)
 
-    def __computeA(self, expression):
-        expression -= self.expr_dXMdX()
-        expression -= self.expr_dXVX()
-        n = len(self.X)
-        A = np.zeros((n), dtype="object")  # If we have kinetic energy
-        for i in range(n):
-            A[i] = sp.diff(expression, self.dX[i])
-        if not np.all(A == 0):
-            self._A = A
+        self.M = sp.Array(2*M)
+        self.V = sp.Array(V)
+        self.K = sp.Array(2*K)
+        self.A = sp.Array(A)
+        self.B = sp.Array(B)
+        self.C = C
 
-    def __computeB(self, expression):
-        expression -= self.expr_dXVX()
-        expression -= self.expr_XKX()
-        n = len(self.X)
-        B = np.zeros((n), dtype="object")  # If we have kinetic energy
-        for i in range(n):
-            B[i] = sp.diff(expression, self.dX[i])
-        if not np.all(B == 0):
-            self._B = B
 
-    def __computeC(self, expression):
-        expression -= self.expr_dXMdX()
-        expression -= self.expr_dXVX()
-        expression -= self.expr_XKX()
-        expression -= self.expr_AdX()
-        expression -= self.expr_BX()
-        expression = sp.expand(expression)
-        expression = sp.simplify(expression)
-        self._C = expression
+
 
     def __str__(self):
         return str(self.expr())
@@ -248,73 +310,158 @@ class Energy(EnergyClass):
     def expr(self):
         result = sp.sympify(0)
         result += self.expr_C()
-        if self._X is None:
-            return result
-        if len(self._X) == 0:
+        if self.X is None:
             return result
         result += self.expr_AdX()
         result += self.expr_BX()
         result += self.expr_dXMdX()
         result += self.expr_dXVX()
         result += self.expr_XKX()
+        result = sp.expand(result)
+        result = sp.simplify(result)
 
         return result
 
     def expr_dXMdX(self):
-        if self.M is not None:
-            return np.dot(self.dX, np.dot(self.M, self.dX)) / 2
-        return 0
-
+        if self.n == 0:
+            return 0
+        mult = np.dot(self.dX, np.dot(self.M, self.dX))
+        if mult is None:
+            return 0
+        return sp.expand(sp.simplify(mult)) / 2
+        
     def expr_XKX(self):
-        if self.K is not None:
-            return np.dot(self.X, np.dot(self.K, self.X)) / 2
-        return 0
+        mult = np.dot(self.X, np.dot(self.K, self.X))
+        if mult is None:
+            return 0
+        return sp.expand(sp.simplify(mult)) / 2
 
     def expr_dXVX(self):
-        if self.V is not None:
-            return np.dot(self.dX, np.dot(self.V, self.X))
-        return 0
-
+        mult = np.dot(self.dX, np.dot(self.V, self.X))
+        if mult is None:
+            return 0
+        return sp.expand(sp.simplify(mult))
+        
     def expr_AdX(self):
-        if self.A is not None:
-            return np.dot(self.A, self.dX)
-        return 0
+        mult = np.dot(self.A, self.dX)
+        if mult is None:
+            return 0        
+        return sp.expand(sp.simplify(mult))
 
     def expr_BX(self):
-        if self.B is not None:
-            return np.dot(self.B, self.X)
-        return 0
-
+        mult = np.dot(self.B, self.X)
+        if mult is None:
+            return 0
+        return sp.expand(sp.simplify(mult))
+        
     def expr_C(self):
         return self.C
 
+    def __add__(self, value):
+        if not isinstance(value, Energy):
+            value = Energy(value)
+        
+        newX = VariableList(self.X) + VariableList(value.X)
+        
+        indexs1 = []
+        indexs2 = []
+        for i, nx in enumerate(newX):
+            if nx in self.X:
+                indexs1.append(i)
+            if nx in value.X:
+                indexs2.append(i)
+
+        newn = len(newX)
+        M = np.zeros((newn, newn), dtype="object")
+        V = np.zeros((newn, newn), dtype="object")
+        K = np.zeros((newn, newn), dtype="object")
+        A = np.zeros((newn), dtype="object")
+        B = np.zeros((newn), dtype="object")
+        C = self.C + value.C
+        for indexs, energ in [(indexs1, self), (indexs2, value)]:
+            for ind_i, new_i in enumerate(indexs):
+                A[new_i] += energ.A[ind_i]
+                B[new_i] += energ.B[ind_i]
+                for ind_j, new_j in enumerate(indexs1):
+                    M[new_i, new_j] += energ.M[ind_i, ind_j]
+                    V[new_i, new_j] += energ.V[ind_i, ind_j]
+                    K[new_i, new_j] += energ.K[ind_i, ind_j]
+        M = sp.Array(M)
+        V = sp.Array(V)
+        K = sp.Array(K)
+        A = sp.Array(A)
+        B = sp.Array(B)
+        C = sp.expand(C)
+        C = sp.simplify(C)
+
+        return Energy.frommatrix(X=newX, M=M, V=V, K=K, A=A, B=B, C=C)
+
+
+    def __sub__(self, value):
+        if not isinstance(value, Energy):
+            value = Energy(value)
+        return self + (-value)
+
+
+    def __neg__(self):
+        return Energy.frommatrix(X=self.X,
+                      M=np.copy(-self.M),
+                      V=np.copy(-self.V),
+                      K=np.copy(-self.K),
+                      A=np.copy(-self.A),
+                      B=np.copy(-self.B),
+                      C=-self.C)
+
+
     def __eq__(self, value):
-        if isinstance(value, Energy):
-            if not np.all(self.M == value.M):
-                return False
-            if not np.all(self.V == value.V):
-                return False
-            if not np.all(self.K == value.K):
-                return False
-            if not np.all(self.A == value.A):
-                return False
-            if not np.all(self.B == value.B):
-                return False
-            if not np.all(self.C == value.C):
+        if value == 0:
+            if self.n:
+                zerosM = sp.zeros(self.n)
+                zerosA = sp.Matrix(np.zeros(self.n))
+                if sp.Matrix(self.M) != zerosM:
+                    return False
+                if sp.Matrix(self.V) != zerosM:
+                    return False
+                if sp.Matrix(self.K) != zerosM:
+                    return False
+                if sp.Matrix(self.A) != zerosA:
+                    return False
+                if sp.Matrix(self.B) != zerosA:
+                    return False
+            if self.C != 0:
                 return False
             return True
-        else:
-            try:
-                value = sp.sympify(value)
-            except Exception:
-                error = "Cannot compare '%s'-type with energy"
-                raise Exception(error % type(value))
-            expr = self.expr()
-            diff = expr - value
-            diff = sp.expand(diff)
-            diff = sp.simplify(diff)
-            diff = sp.nsimplify(diff, tolerance=1e-10, rational=True)
-            return diff == 0
+
+
+
+        if not isinstance(value, Energy):
+            value = Energy(value)
+        if self.n != value.n:
+            return False
+        if self.n == 0:
+            return self.C == value.C
+        if self.X != value.X:
+            return False
+
+        diff = self-value
+        return diff == 0
 
     def __ne__(self, value):
         return not self.__eq__(value)
+
+
+def isSympyEqual(M1, M2):
+    if isinstance(M1, np.ndarray) and isinstance(M2, np.ndarray):
+        if M1.shape != M2.shape:
+            return False
+        
+        for i in range(M1.shape[0]):
+            if not isSympyEqual(M1[0], M2[0]):
+                return False
+        return True
+
+    else:
+        diff = M1 - M2
+        diff = sp.expand(diff)
+        diff = sp.simplify(diff)
+        return diff == 0

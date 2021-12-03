@@ -9,20 +9,24 @@ def randomSymmetricMatrix(n):
     return M + np.transpose(M)
 
 
+# @pytest.mark.dependency(
+#     depends=["tests/test_variables.py::test_allgood"])
 @pytest.mark.dependency()
 def test_begin():
     pass
 
+
+
 @pytest.mark.dependency(depends=["test_begin"])
 @pytest.mark.timeout(2)
 def test_Build():
-    Energy()
+    Energy(0)
 
 
 @pytest.mark.dependency(depends=["test_Build"])
 @pytest.mark.timeout(2)
 def test_Constant():
-    Ntests = 10
+    Ntests = 1  # 10
     for i in range(Ntests):
         a = np.random.rand()
         E = Energy(a)
@@ -32,7 +36,7 @@ def test_Constant():
 @pytest.mark.dependency(depends=["test_Constant"])
 @pytest.mark.timeout(2)
 def test_LinearPosition():
-    Ntests = 10
+    Ntests = 1  # 10
     x = Variable("x")
     for i in range(Ntests):
         a = np.random.rand()
@@ -43,7 +47,7 @@ def test_LinearPosition():
 @pytest.mark.dependency(depends=["test_Constant"])
 @pytest.mark.timeout(2)
 def test_LinearSpeed():
-    Ntests = 10
+    Ntests = 1  # 10
     x = Variable("x")
     dx = x.dt
     for i in range(Ntests):
@@ -55,7 +59,7 @@ def test_LinearSpeed():
 @pytest.mark.dependency(depends=["test_LinearPosition"])
 @pytest.mark.timeout(2)
 def test_QuadPosition():
-    Ntests = 10
+    Ntests = 1  # 10
     x = Variable("x")
     for i in range(Ntests):
         a = np.random.rand()
@@ -66,7 +70,7 @@ def test_QuadPosition():
 @pytest.mark.dependency(depends=["test_LinearPosition", "test_LinearSpeed"])
 @pytest.mark.timeout(2)
 def test_QuadPositionSpeed():
-    Ntests = 10
+    Ntests = 1  # 10
     x = Variable("x")
     dx = x.dt
     for i in range(Ntests):
@@ -78,7 +82,7 @@ def test_QuadPositionSpeed():
 @pytest.mark.dependency(depends=["test_LinearSpeed"])
 @pytest.mark.timeout(2)
 def test_QuadSpeed():
-    Ntests = 10
+    Ntests = 1  # 10
     x = Variable("x")
     dx = x.dt
     for i in range(Ntests):
@@ -90,7 +94,7 @@ def test_QuadSpeed():
 @pytest.mark.dependency(depends=["test_LinearPosition", "test_LinearSpeed"])
 @pytest.mark.timeout(2)
 def test_Linear():
-    Ntests = 10
+    Ntests = 1  # 10
     x = Variable("x")
     dx = x.dt
     for i in range(Ntests):
@@ -105,7 +109,7 @@ def test_Linear():
 @pytest.mark.dependency(depends=["test_QuadPosition", "test_QuadPositionSpeed", "test_QuadSpeed"])
 @pytest.mark.timeout(2)
 def test_Quad():
-    Ntests = 10
+    Ntests = 1  # 10
     x = Variable("x")
     dx = x.dt
     for i in range(Ntests):
@@ -120,7 +124,7 @@ def test_Quad():
 @pytest.mark.dependency(depends=["test_Linear", "test_Quad"])
 @pytest.mark.timeout(20)
 def test_AllQuantity():
-    Ntests = 10
+    Ntests = 1  # 10
     x = Variable("x")
     dx = x.dt
     for i in range(Ntests):
@@ -134,10 +138,39 @@ def test_AllQuantity():
         E = Energy(totalenergy)
         assert E == totalenergy
 
-
 @pytest.mark.dependency(depends=["test_AllQuantity"])
-def test_CompareWithMatrixDim2():
-    Ntests = 10
+@pytest.mark.timeout(2)
+def test_CompareWithMatrixDim2_Standard():
+    x = Variable("x")
+    y = Variable("y")
+    dx = x.dt
+    dy = y.dt
+    X = (x, y)
+    
+    M = np.array([[14, 2],
+                  [2, 12]])
+    V = np.array([[4, 6],
+                  [3, 5]])
+    K = np.array([[-6, -3],
+                  [-3, -10]])
+
+    A = np.array([1, -7])
+    B = np.array([-5, 9])
+    C = 80
+
+    ener = 7*(dx**2) + 2*dx*dy + 6*(dy**2) + \
+           4*dx*x + 6*dx*y + 3*dy*x + 5*dy*y + \
+           (-3)*x**2 + (-3)*x*y + (-5)*y**2 + \
+           1*dx + (-7)*dy + (-5)*x + 9*y + 80
+
+
+    assert Energy(ener) == ener
+
+
+@pytest.mark.dependency(depends=["test_CompareWithMatrixDim2_Standard"])
+@pytest.mark.timeout(60)
+def test_CompareWithMatrixDim2_Random():
+    Ntests = 1  # 10
     x = Variable("x")
     y = Variable("y")
     X = np.array([x, y])
@@ -159,9 +192,10 @@ def test_CompareWithMatrixDim2():
         assert E == totalenergy
 
 
-@pytest.mark.dependency(depends=["test_CompareWithMatrixDim2"])
-def test_CompareWithMatrixDim5():
-    Ntests = 2
+@pytest.mark.timeout(120)
+@pytest.mark.dependency(depends=["test_CompareWithMatrixDim2_Random"])
+def test_CompareWithMatrixDim5_Random():
+    Ntests = 1  # 2
     dim = 5
     X = []
     dX = []
@@ -184,13 +218,44 @@ def test_CompareWithMatrixDim5():
         totalenergy += np.dot(X, np.dot(K, X)) / 2
         totalenergy += np.dot(A, dX)
         totalenergy += np.dot(B, X)
+        print("z")
         E = Energy(totalenergy)
+        print("k")
         assert E == totalenergy
 
+@pytest.mark.timeout(10)
+@pytest.mark.dependency(depends=["test_CompareWithMatrixDim2_Standard"])
+def test_SetMatrixDim2_Standard():
+    x = Variable("x")
+    y = Variable("y")
+    dx = x.dt
+    dy = y.dt
+    X = (x, y)
+    
+    M = np.array([[14, 2],
+                  [2, 12]])
+    V = np.array([[4, 6],
+                  [3, 5]])
+    K = np.array([[-6, -3],
+                  [-3, -10]])
 
-@pytest.mark.dependency(depends=["test_AllQuantity"])
-def test_SetMatrixDim2():
-    Ntests = 10
+    A = np.array([1, -7])
+    B = np.array([-5, 9])
+    C = 80
+
+    ener = 7*(dx**2) + 2*dx*dy + 6*(dy**2) + \
+           4*dx*x + 6*dx*y + 3*dy*x + 5*dy*y + \
+           (-3)*x**2 + (-3)*x*y + (-5)*y**2 + \
+           1*dx + (-7)*dy + (-5)*x + 9*y + 80
+    E = Energy.frommatrix(X=X, M=M, V=V, K=K, A=A, B=B, C=C)
+    ener = Energy(ener)
+    assert E == ener
+    
+
+@pytest.mark.timeout(10)
+@pytest.mark.dependency(depends=["test_SetMatrixDim2_Standard"])
+def test_SetMatrixDim2_Random():
+    Ntests = 1  # 2
     x = Variable("x")
     y = Variable("y")
     X = np.array([x, y])
@@ -208,13 +273,14 @@ def test_SetMatrixDim2():
         totalenergy += np.dot(X, np.dot(K, X)) / 2
         totalenergy += np.dot(A, dX)
         totalenergy += np.dot(B, X)
-        E = Energy(X=X, M=M, V=V, K=K, A=A, B=B, C=C)
+        E = Energy.frommatrix(X=X, M=M, V=V, K=K, A=A, B=B, C=C)
         assert E == totalenergy
 
 
-@pytest.mark.dependency(depends=["test_SetMatrixDim2"])
-def test_SetMatrixDim5():
-    Ntests = 2
+@pytest.mark.timeout(120)
+@pytest.mark.dependency(depends=["test_SetMatrixDim2_Random"])
+def test_SetMatrixDim5_Random():
+    Ntests = 1  # 2
     dim = 5
     X = []
     dX = []
@@ -237,13 +303,26 @@ def test_SetMatrixDim5():
         totalenergy += np.dot(X, np.dot(K, X)) / 2
         totalenergy += np.dot(A, dX)
         totalenergy += np.dot(B, X)
-        E = Energy(X=X, M=M, V=V, K=K, A=A, B=B, C=C)
+        E = Energy.frommatrix(X=X, M=M, V=V, K=K, A=A, B=B, C=C)
         assert E == totalenergy
 
 
+@pytest.mark.timeout(20)
 @pytest.mark.dependency(depends=["test_AllQuantity"])
-def test_KineticEnergy():
-    Ntests = 100
+def test_KineticEnergy_Standard():
+    x = Variable("x")
+    dx = x.dt
+    mass = 1
+    vector3D = (dx, 0, 0)
+    E_good = mass*(dx**2)/2
+    E_test = KineticEnergy(mass, vector3D)
+    E_good = Energy(E_good)
+    assert E_test == E_good
+
+@pytest.mark.timeout(60)
+@pytest.mark.dependency(depends=["test_KineticEnergy_Standard"])
+def test_KineticEnergy_Random():
+    Ntests = 1  # 10
     x = Variable("x")
     y = Variable("y")
     for i in range(Ntests):
@@ -252,6 +331,11 @@ def test_KineticEnergy():
         vector3D += x.dt * np.random.rand(3)
         vector3D += y.dt * np.random.rand(3)
         E = KineticEnergy(mass, vector3D)
+
         assert E == mass * np.dot(vector3D, vector3D) / 2
+
+
+@pytest.mark.dependency(depends=["test_SetMatrixDim5_Random", "test_KineticEnergy_Random"])
 def test_allgood():
     pass
+
