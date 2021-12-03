@@ -264,32 +264,34 @@ class Energy(EnergyMatrix, EnergyBaseClass):
                 all_variables.append(K[i, j])
         for i in range(self.n):
             for j in range(i+1, self.n):
-                equations.append(M[i, j] - M[j, i])
-                equations.append(K[i, j] - K[j, i])
-
-        Esup = C
-        for i in range(self.n):
-            Esup += A[(i,)]*self.dX[i]
-            Esup += B[(i,)]*self.X[i]
-            for j in range(self.n):
-                Esup += M[i, j]*self.dX[i]*self.dX[j]
-                Esup += V[i, j]*self.dX[i]*self.X[j]
-                Esup += K[i, j]*self.X[i]*self.X[j]
-        poly = sp.Poly(Esup-expression, list(self.X)+list(self.dX))
-        equations += poly.coeffs()
-        solution = sp.solve(equations, all_variables)
-        if solution == []:
-            raise ValueError("Could not find solution to get the expression")
-        C = C.subs(solution.items())
-        for var, val in solution.items():
-            # C = C.subs(var, val)
-            for i in range(self.n):
-                A[(i,)] = A[(i,)].subs(var, val)
-                B[(i,)] = B[(i,)].subs(var, val)
-                for j in range(self.n):
-                    M[i, j] = M[i, j].subs(var, val)
-                    V[i, j] = V[i, j].subs(var, val)
-                    K[i, j] = K[i, j].subs(var, val)
+                dxj = self.dX[j]
+                M[i, j] = expression.coeff(dxi*dxj)
+                M[j, i] = M[i, j]
+        expression -= np.dot(np.dot(M, self.dX), self.dX)/2
+        expression = sp.expand(expression)
+        for i, xi in enumerate(self.X):
+            K[i, i] = 2*expression.coeff(xi**2)
+            for j in range(i+1, self.n):
+                xj = self.X[j]
+                K[i, j] = expression.coeff(xi*xj)
+                K[j, i] = K[i, j]
+        expression -= np.dot(np.dot(K, self.X), self.X)/2
+        expression = sp.expand(expression)
+        for i, dxi in enumerate(self.dX):
+            for j, xj in enumerate(self.X):
+                V[i, j] = expression.coeff(dxi*xj)
+        expression -= np.dot(np.dot(V, self.X), self.dX)
+        expression = sp.expand(expression)
+        
+        for i, dxi in enumerate(self.dX):
+            A[i] = expression.coeff(dxi)
+        expression -= np.dot(A, self.dX)
+        expression = sp.expand(expression)
+        for i, xi in enumerate(self.X):
+            B[i] = expression.coeff(xi)
+        expression -= np.dot(B, self.X)
+        expression = sp.expand(expression)
+        C = sp.simplify(expression)
 
         self.M = sp.Array(2*M)
         self.V = sp.Array(V)
