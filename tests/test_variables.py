@@ -1,9 +1,12 @@
 import pytest
 import numpy as np
-from compmec.rbdyn.variable import Variable
-
+from compmec.rbdyn.variable import Variable, VariableList
 
 @pytest.mark.dependency()
+def test_begin():
+    pass
+
+@pytest.mark.dependency(depends=["test_begin"])
 def test_Build():
     x = Variable("x")
 
@@ -40,39 +43,16 @@ def test_SortAllVariables():
     x = Variable("x")
     y = Variable("y")
     p = Variable("p")
-    listgood = (x, y, p)
 
-    listvars = [x, y, p]
-    listtest = Variable.sort(listvars)
-    assert isinstance(listtest, tuple) is True
-    for i in range(3):
-        assert type(listtest[i]) is type(listgood[i])
-        assert listtest[i] == listgood[i]
+    listgood = VariableList([x, y, p])
 
-    listvars = [x, p, y]
-    listtest = Variable.sort(listvars)
-    assert isinstance(listtest, tuple) is True
-    assert listtest == listgood
+    assert VariableList([x, y, p]) == listgood
+    assert VariableList([x, p, y]) == listgood
+    assert VariableList([y, x, p]) == listgood
+    assert VariableList([y, p, x]) == listgood
+    assert VariableList([p, x, y]) == listgood
+    assert VariableList([p, y, x]) == listgood
 
-    listvars = [y, x, p]
-    listtest = Variable.sort(listvars)
-    assert isinstance(listtest, tuple) is True
-    assert listtest == listgood
-
-    listvars = [y, p, x]
-    listtest = Variable.sort(listvars)
-    assert isinstance(listtest, tuple) is True
-    assert listtest == listgood
-
-    listvars = [p, x, y]
-    listtest = Variable.sort(listvars)
-    assert isinstance(listtest, tuple) is True
-    assert listtest == listgood
-
-    listvars = [p, y, x]
-    listtest = Variable.sort(listvars)
-    assert isinstance(listtest, tuple) is True
-    assert listtest == listgood
 
 
 @pytest.mark.dependency(depends=["test_SortAllVariables"])
@@ -81,45 +61,14 @@ def test_SortSomeVariables():
     y = Variable("y")
     p = Variable("p")
 
-    listvars = [x, y]
-    listtest = Variable.sort(listvars)
-    assert isinstance(listtest, tuple) is True
-    assert listtest == (x, y)
 
-    listvars = [x, p]
-    listtest = Variable.sort(listvars)
-    assert isinstance(listtest, tuple) is True
-    assert listtest == (x, p)
-
-    listvars = [y, x]
-    listtest = Variable.sort(listvars)
-    assert isinstance(listtest, tuple) is True
-    assert listtest == (x, y)
-
-    listvars = [p, x]
-    listtest = Variable.sort(listvars)
-    assert isinstance(listtest, tuple) is True
-    assert listtest == (x, p)
-
-    listvars = [y, p]
-    listtest = Variable.sort(listvars)
-    assert isinstance(listtest, tuple) is True
-    assert listtest == (y, p)
-
-    listvars = [p, y]
-    listtest = Variable.sort(listvars)
-    assert isinstance(listtest, tuple) is True
-    assert listtest == (y, p)
+    assert VariableList([x, y]) == VariableList([y, x])
+    assert VariableList([x, p]) == VariableList([p, x])
+    assert VariableList([y, p]) == VariableList([p, y])
+    
 
 
-@pytest.mark.dependency(depends=["test_BuildTwoVariables", "test_Comparation"])
-def test_ErrorSortVariables():
-    x = Variable("x")
-    y = Variable("y")
-    dx = x.dt
 
-    with pytest.raises(TypeError):
-        Variable.sort([1, y])
-
-    with pytest.raises(ValueError):
-        Variable.sort([dx, y])
+@pytest.mark.dependency(depends=["test_SortSomeVariables", "test_SortSomeVariables"])
+def test_allgood():
+    pass
