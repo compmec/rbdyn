@@ -2,7 +2,7 @@ import numpy as np
 import sympy as sp
 from compmec.rbdyn.kinematic import Kinematic
 from compmec.rbdyn.__classes__ import FrameReferenceBaseClass, time
-from compmec.rbdyn.__validation__ import Validation_FrameReference, Validation_FrameComposition, isNumericValue
+from compmec.rbdyn.__validation__ import Validation_FrameReference, Validation_FrameComposition, IS
 
 def TakeOutSmallNumbers(value, tolerance=1e-15):
     if isinstance(value, (int, float)):

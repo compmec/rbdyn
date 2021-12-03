@@ -1,6 +1,5 @@
 import pytest
 import numpy as np
-from compmec.rbdyn.__classes__ import FrameReferenceClass
 from compmec.rbdyn.frames import FrameReference
 
 

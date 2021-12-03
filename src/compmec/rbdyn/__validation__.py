@@ -191,50 +191,53 @@ class IS:
 
 
 
-def isNumericValue(value):
-    if isinstance(value, int):
-        return True
-    elif isinstance(value, float):
-        return True
-    elif isinstance(value, str):
-        return False
-    elif isinstance(value, np.ndarray):
-        pass
-    elif isinstance(value, (list, tuple)):
-        try:
-            value = np.array(value)
-        except Exception:
-            return False
-    else:
-        return False
-
-    if np.issubdtype(value.dtype, np.number):
-        return True
-    else:
-        return False
-
-def isSympyExpression(expr):
-    try:
-        convexpr = sp.sympify(expr)
-        return True
-    except Exception as e:
-        return False
-
-def isSymbolicValue(value):
-    if isinstance(value, (list, tuple)):
-        value = np.array(value)
-    elif isinstance(value, np.ndarray):
-        pass
-    elif isSympyExpression(value):
-        return True
-    else:
-        return False
-
-    for i in range(value.shape[0]):
-        v = value[0]
-        if isSymbolicValue(v):
+    @staticmethod
+    def NumericValue(value):
+        if isinstance(value, int):
             return True
-    return False
+        elif isinstance(value, float):
+            return True
+        elif isinstance(value, str):
+            return False
+        elif isinstance(value, np.ndarray):
+            pass
+        elif isinstance(value, (list, tuple)):
+            try:
+                value = np.array(value)
+            except Exception:
+                return False
+        else:
+            return False
+
+        if np.issubdtype(value.dtype, np.number):
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def SympyExpression(expr):
+        try:
+            convexpr = sp.sympify(expr)
+            return True
+        except Exception as e:
+            return False
+
+    @staticmethod
+    def SymbolicValue(value):
+        if isinstance(value, (list, tuple)):
+            value = np.array(value)
+        elif isinstance(value, np.ndarray):
+            pass
+        elif IS.SympyExpression(value):
+            return True
+        else:
+            return False
+
+        for i in range(value.shape[0]):
+            v = value[0]
+            if IS.SymbolicValue(v):
+                return True
+        return False
 
 
 class Verify:
@@ -374,9 +377,9 @@ class Verify:
         RT = np.transpose(R)
         M = np.dot(RT, R)
         diff = M - np.eye(3)
-        if isNumericValue(R):
+        if IS.NumericValue(R):
             pass
-        elif isSymbolicValue(R):
+        elif IS.SymbolicValue(R):
             for i in range(3):
                 for j in range(3):
                     diff[i, j] = sp.expand(diff[i, j])
@@ -386,9 +389,9 @@ class Verify:
 
     @staticmethod
     def Angle(angle):
-        if isNumericValue(angle):
+        if IS.NumericValue(angle):
             pass
-        elif isSymbolicValue(angle):
+        elif IS.SymbolicValue(angle):
             pass
         else:
             raise TypeError("Angle must be a number or a variable")
@@ -428,7 +431,7 @@ class Verify:
 
     @staticmethod
     def SympyExpression(expr):
-        if not isSympyExpression(expr):
+        if not IS.SympyExpression(expr):
             error = "The argument must be a sympy expression, not %s"
             raise TypeError(error % type(expr))
 
@@ -897,7 +900,7 @@ class Validation_Simulation:
     @staticmethod
     def timesteps(timesteps):
         Verify.IsVector(timesteps)
-        if not isNumericValue(timesteps):
+        if not IS.NumericValue(timesteps):
             raise ValueError("The timesteps given must be an array with numeric values")
 
 
