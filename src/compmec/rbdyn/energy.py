@@ -241,28 +241,15 @@ class Energy(EnergyMatrix, EnergyBaseClass):
             self.C = expression
 
     def __compute_expression(self, expression):
-        A = sp.MutableDenseNDimArray(np.zeros(self.n))
-        B = sp.MutableDenseNDimArray(np.zeros(self.n))
-        M = sp.MutableDenseNDimArray(np.zeros((self.n, self.n)))
-        V = sp.MutableDenseNDimArray(np.zeros((self.n, self.n)))
-        K = sp.MutableDenseNDimArray(np.zeros((self.n, self.n)))
-        C = sp.Function("C")(*tuple(self.X))
-
-        all_variables = [C]
-        equations = []
-        for i in range(self.n):
-            A[(i,)] = sp.Function(f"A{i}")(*tuple(self.X))
-            B[(i,)] = sp.Function(f"B{i}")(*tuple(self.X))
-            all_variables.append(A[(i,)])
-            all_variables.append(B[(i,)])
-            for j in range(self.n):
-                M[i, j] = sp.Function(f"M{i}{j}")(*tuple(self.X))
-                V[i, j] = sp.Function(f"V{i}{j}")(*tuple(self.X))
-                K[i, j] = sp.Function(f"K{i}{j}")(*tuple(self.X))
-                all_variables.append(M[i, j])
-                all_variables.append(V[i, j])
-                all_variables.append(K[i, j])
-        for i in range(self.n):
+        expression = sp.sympify(expression)
+        expression = sp.expand(expression)
+        A = np.zeros((self.n), dtype="object")
+        B = np.zeros((self.n), dtype="object")
+        M = np.zeros((self.n, self.n), dtype="object")
+        V = np.zeros((self.n, self.n), dtype="object")
+        K = np.zeros((self.n, self.n), dtype="object")
+        for i, dxi in enumerate(self.dX):
+            M[i, i] = 2*expression.coeff(dxi**2)
             for j in range(i+1, self.n):
                 dxj = self.dX[j]
                 M[i, j] = expression.coeff(dxi*dxj)
@@ -293,9 +280,9 @@ class Energy(EnergyMatrix, EnergyBaseClass):
         expression = sp.expand(expression)
         C = sp.simplify(expression)
 
-        self.M = sp.Array(2*M)
+        self.M = sp.Array(M)
         self.V = sp.Array(V)
-        self.K = sp.Array(2*K)
+        self.K = sp.Array(K)
         self.A = sp.Array(A)
         self.B = sp.Array(B)
         self.C = C
