@@ -429,6 +429,10 @@ class Euler(Solver):
 		allX = [self.X0] 
 		alldX = [self.dX0] 
  
+		if timeout is not None:
+			timeout = datetime.timedelta(seconds=timeout)
+
+
 		finaltime = self.timesteps[-1] 
 		initialtime = datetime.datetime.now() 
 		i = 0 

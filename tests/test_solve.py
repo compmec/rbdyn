@@ -6,8 +6,6 @@ from compmec.rbdyn.lagrangian import Lagrangian
 from compmec.rbdyn.energy import Energy
 from compmec.rbdyn.solver import Euler
 
-from matplotlib import pyplot as plt
-from datetime import timedelta
 
 # @pytest.mark.dependency(
 #     depends=["tests/test_frame.py::test_allgood",
@@ -37,7 +35,7 @@ def test_Spring():
     F = [0]
 
     solver = Euler(E, IC, G, F, timesteps)
-    result = solver.run(timeout=timedelta(seconds=15))
+    result = solver.run(timeout=5)
 
 @pytest.mark.timeout(60)
 @pytest.mark.dependency(depends=["test_begin"])
@@ -59,7 +57,7 @@ def test_SimplePendulumAngular():
     F = [0]
 
     solver = Euler(E, IC, G, F, timesteps)
-    result = solver.run(timeout=timedelta(seconds=15))
+    result = solver.run(timeout=5)
 
 @pytest.mark.timeout(60)
 @pytest.mark.dependency(depends=["test_begin"])
@@ -87,7 +85,7 @@ def test_SimplePendulumCartesian():
     G = [x**2 + y**2 - L**2]
     F = [0, 0]
     solver = Euler(E, IC, G, F, timesteps)
-    results = solver.run(timeout=timedelta(seconds=60))
+    results = solver.run(timeout=60)
 
 @pytest.mark.timeout(60)
 @pytest.mark.dependency(depends=["test_begin"])
@@ -129,5 +127,5 @@ def test_DoublePendulumCartesian():
          (x2)**2 + (y2)**2 - (L2)**2]
     F = [0, 0, 0, 0]
     solver = Euler(E, IC, G, F, timesteps)
-    results = solver.run(timeout=timedelta(seconds=60))
+    results = solver.run(timeout=60)
 
