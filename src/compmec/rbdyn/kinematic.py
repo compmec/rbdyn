@@ -1,14 +1,16 @@
 import numpy as np
 from numpy import linalg as la
-from compmec.rbdyn.__classes__ import KinematicClass
+from compmec.rbdyn.__classes__ import KinematicBaseClass
 from compmec.rbdyn.__validation__ import Validation_Kinematic, Validation_ObjectKinematic
 from compmec.rbdyn.composition import Compute
 
 
-class Kinematic(KinematicClass):
+class Kinematic(KinematicBaseClass):
+
+    validation = Validation_Kinematic
 
     def __init__(self, init=True):
-        Validation_Kinematic.init(init)
+        self.validation.init(self, init)
         if init:
             self.p = np.zeros(3)  # linear position
             self.v = np.zeros(3)  # linear velocity
@@ -24,74 +26,37 @@ class Kinematic(KinematicClass):
             self._w = None
             self._q = None
 
+
+
     @property
     def p(self):
         return self._p
 
-    @p.setter
-    def p(self, value):
-        Validation_Kinematic.p(value)
-        self._p = value
-
     @property
     def v(self):
         return self._v
-
-    @v.setter
-    def v(self, value):
-        Validation_Kinematic.v(value)
-        self._v = value
-
+    
     @property
     def a(self):
         return self._a
-
-    @a.setter
-    def a(self, value):
-        Validation_Kinematic.a(value)
-        self._a = value
 
     @property
     def r(self):
         if self.R is None:
             return None
         return Compute.R2r(self.R)
-
-    @r.setter
-    def r(self, value):
-        Validation_Kinematic.r(value)
-        if len(value) == 2:
-            angle, direction = value
-            self.R = Compute.R(angle, direction)
-        else:
-            self.R = Compute.r2R(value)
-
+    
     @property
     def w(self):
         return self._w
-
-    @w.setter
-    def w(self, value):
-        Validation_Kinematic.w(value)
-        self._w = value
 
     @property
     def q(self):
         return self._q
 
-    @q.setter
-    def q(self, value):
-        Validation_Kinematic.q(value)
-        self._q = value
-
     @property
     def R(self):
         return self._R
-
-    @R.setter
-    def R(self, value):
-        Validation_Kinematic.R(value)
-        self._R = value
 
     @property
     def W(self):
@@ -99,26 +64,72 @@ class Kinematic(KinematicClass):
             return None
         return Compute.w2W(self.w)
 
-    @W.setter
-    def W(self, value):
-        Validation_Kinematic.W(value)
-        self.w = Compute.W2w(value)
-
     @property
     def Q(self):
         if self.q is None:
             return None
         return Compute.q2Q(self.q)
 
+
+    @p.setter
+    def p(self, value):
+        self.validation.psetter(self, value)
+        self._p = value
+
+
+    @v.setter
+    def v(self, value):
+        self.validation.vsetter(self, value)
+        self._v = value
+
+
+    @a.setter
+    def a(self, value):
+        self.validation.asetter(self, value)
+        self._a = value
+
+
+    @r.setter
+    def r(self, value):
+        self.validation.rsetter(self, value)
+        if len(value) == 2:
+            angle, direction = value
+            self.R = Compute.R(angle, direction)
+        else:
+            self.R = Compute.r2R(value)
+
+    @w.setter
+    def w(self, value):
+        self.validation.wsetter(self, value)
+        self._w = value
+
+    @q.setter
+    def q(self, value):
+        self.validation.qsetter(self, value)
+        self._q = value
+
+    @R.setter
+    def R(self, value):
+        self.validation.Rsetter(self, value)
+        self._R = value
+
+    @W.setter
+    def W(self, value):
+        self.validation.Wsetter(self, value)
+        self.w = Compute.W2w(value)
+
     @Q.setter
     def Q(self, value):
-        Validation_Kinematic.Q(value)
+        self.validation.Qsetter(self, value)
         self.q = Compute.Q2q(value)
 
 
 class ObjectKinematic(Kinematic):
 
+    validation = Validation_ObjectKinematic
+
     def __init__(self, init=True):
+        self.validation.init(self, init)
         Kinematic.__init__(self, init)
         if init:
             self.CM = np.zeros(3)  # Center of mass
@@ -131,21 +142,23 @@ class ObjectKinematic(Kinematic):
     def CM(self):
         return self._CM
 
-    @CM.setter
-    def CM(self, value):
-        Validation_ObjectKinematic.CM(value)
-        self._CM = value
-
     @property
     def II(self):
         return self._II
 
+    @CM.setter
+    def CM(self, value):
+        self.validation.CMsetter(self, value)
+        self._CM = value
+
+
     @II.setter
     def II(self, value):
-        Validation_ObjectKinematic.II(value)
+        self.validation.IIsetter(self, value)
         self._II = value
 
     def get(self, element):
+        self.validation.get(self, element)
         if element == "p":
             return self.p
         elif element == "v":

@@ -1,14 +1,17 @@
 import numpy as np
 import numpy.linalg as la
 import sympy as sp
-from compmec.rbdyn.__classes__ import ObjectClass
+from compmec.rbdyn.__classes__ import ObjectBaseClass
 from compmec.rbdyn.__validation__ import Validation_Object
 from compmec.rbdyn.kinematic import ObjectKinematic
 from compmec.rbdyn.frames import FrameReference, FrameComposition
-from compmec.rbdyn import energy
+from compmec.rbdyn.energy import Energy
 
 
-class Object(ObjectClass):
+class Object(ObjectBaseClass):
+
+    validation = Validation_Object
+    instances = []
 
     def __init__(self, baseframe, name=None):
         Validation_Object.init(baseframe, name)
@@ -41,21 +44,21 @@ class Object(ObjectClass):
 
     @mass.setter
     def mass(self, value):
-        Validation_Object.mass(value)
+        self.validation.masssetter(self, value)
         self._mass = value
 
     @CM.setter
     def CM(self, value):
-        Validation_Object.CM(value)
+        self.validation.CMsetter(self, value)
         self.data[self.baseframe].CM = value
 
     @II.setter
     def II(self, value):
-        Validation_Object.II(value)
+        self.validation.IIsetter(self, value)
         self.data[self.baseframe].II = value
 
     def get(self, frame, element):
-        Validation_Object.get(frame, element)
+        self.validation.get(frame, element)
         if frame not in self.data:
             self.__computeElement(frame, element)
 
@@ -155,4 +158,4 @@ class Object(ObjectClass):
 
     def KineticEnergy(self, frame):
         v = self.get(frame, "v")
-        return energy.KineticEnergy(self.mass, v)
+        return Energy.Kinetic(self.mass, v)
