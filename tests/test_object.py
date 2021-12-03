@@ -6,7 +6,11 @@ from compmec.rbdyn.frames import FrameReference
 
 
 @pytest.mark.dependency()
+def test_begin():
+    pass
+
 @pytest.mark.timeout(2)
+@pytest.mark.dependency(depends=["test_begin"])
 def test_Build():
     R0 = FrameReference()
     bar = Object(R0)
@@ -142,3 +146,7 @@ def test_KineticEnergy():
     v = point.get(R0, "v")
     E = point.KineticEnergy(R0)
     assert E == m * np.dot(v, v) / 2
+
+@pytest.mark.dependency(depends=["test_KineticEnergy"])
+def test_allgood():
+    pass

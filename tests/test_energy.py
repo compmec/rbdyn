@@ -10,6 +10,10 @@ def randomSymmetricMatrix(n):
 
 
 @pytest.mark.dependency()
+def test_begin():
+    pass
+
+@pytest.mark.dependency(depends=["test_begin"])
 @pytest.mark.timeout(2)
 def test_Build():
     Energy()
@@ -249,3 +253,5 @@ def test_KineticEnergy():
         vector3D += y.dt * np.random.rand(3)
         E = KineticEnergy(mass, vector3D)
         assert E == mass * np.dot(vector3D, vector3D) / 2
+def test_allgood():
+    pass

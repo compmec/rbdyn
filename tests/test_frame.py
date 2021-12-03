@@ -10,8 +10,13 @@ def getRandomUnit3DVector():
     return v / norm_v
 
 
+# @pytest.mark.dependency(depends=["tests/test_kinematic.py::test_allgood"], scope="session")
 @pytest.mark.dependency()
+def test_begin():
+    pass
+
 @pytest.mark.timeout(2)
+@pytest.mark.dependency(depends=["test_begin"])
 def test_BuildInertialFrame():
     R0 = FrameReference()  # Inertial Frame of Reference
 
@@ -92,3 +97,8 @@ def test_BuildTranslatedAndRotatedFrame_random():
         direction = getRandomUnit3DVector()
         rotation = (angle, direction)
         Ri = FrameReference(R0, translation=translation, rotation=rotation)
+
+
+@pytest.mark.dependency(depends=["test_BuildTranslatedAndRotatedFrame_random"])
+def test_allgood():
+    pass

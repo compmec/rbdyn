@@ -4,7 +4,12 @@ from compmec.rbdyn.kinematic import Kinematic, ObjectKinematic
 
 
 @pytest.mark.dependency()
+def test_begin():
+    pass
+
+
 @pytest.mark.timeout(2)
+@pytest.mark.dependency(depends=["test_begin"])
 def test_BuildKinematic():
     kine = Kinematic()
 
@@ -293,3 +298,9 @@ def test_ObjectKinematic_NonInitialValues():
     assert kine.Q is None
     assert kine.CM is None
     assert kine.II is None
+
+
+# @pytest.mark.dependency(depends=["test_ObjectKinematic_NonInitialValues"])
+@pytest.mark.dependency()
+def test_allgood():
+    pass
