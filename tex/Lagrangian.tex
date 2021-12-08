@@ -1,0 +1,162 @@
+\documentclass[a4paper]{article}
+% \usepackage{mathtools}
+\usepackage{amsmath}
+
+
+\newcommand{\vvector}[1]{\pmb{#1}}
+% \newcommand{\vvector}[1]{\underline{#1}}
+% \newcommand{\tensor}[1]{\overline{\overline{#1}}}
+% \newcommand{\tensor}[1]{\underline{\underline{#1}}}
+\newcommand{\tensor}[1]{#1}
+\newcommand{\trace}[1]{\textrm{tr}\left({#1}\right)}
+\newcommand{\inner}{\pmb{\cdot}}
+\newcommand{\dinner}{\pmb{:}}
+
+
+\begin{document}
+
+\begin{center}
+\Huge
+Lagrangian
+\end{center}
+
+
+\section{Introduction}
+
+Let's suppose that we have a vector $\vvector{X}$ of variables:
+
+$$
+\vvector{X} = \left[x_{i}\right] \Rightarrow 
+\vvector{\dot{X}}  = \left[\dot{x}_{i}\right]
+$$
+
+
+We have the given energy function defined like
+ 
+ 
+\begin{equation}
+E = \dfrac{1}{2} \vvector{\dot{X}} \inner \tensor{M} \inner \vvector{\dot{X}} + \vvector{\dot{X}} \inner \tensor{V} \inner \vvector{X} +  
+\dfrac{1}{2} \vvector{X} \inner \tensor{K} \inner \vvector{X} + \vvector{A} \inner \vvector{\dot{X}} + \vvector{B} \inner \vvector{X} + C 
+\end{equation}
+ 
+Or using the indical notation
+ 
+\begin{align*} 
+E = & \  C + \sum_{j} \left(A_{j} \dot{x}_{j} + B_{j} x_{j}\right) +  \\
+& \sum_{j} \sum_{k} \left(\dfrac{1}{2}M_{jk} \dot{x}_{j} \dot{x}_{k} + V_{jk} \cdot \dot{x}_{j} x_{k} + \dfrac{1}{2}K_{jk} \cdot x_{j} x_{k}\right)
+\end{align*} 
+ 
+ 
+The Lagrangian operator, applied in $E$ with the variable $\vvector{X}$ is defined by 
+ 
+\begin{equation} 
+\vvector{L} = \dfrac{d}{dt}\left(\dfrac{\partial E}{\partial \vvector{\dot{X}}}\right) - \dfrac{\partial E}{\partial \vvector{X}} 
+\end{equation} 
+ 
+Or using the indicial notation
+ 
+\begin{equation} 
+L_{i} = \dfrac{d}{dt}\left(\dfrac{\partial E}{\partial \dot{x}_{i}} \right) - \dfrac{\partial E}{\partial x_{i}} 
+\end{equation} 
+ 
+Using the given definition and supposing that $M$, $V$, $K$, $A$, $B$ and $C$ are only function of $\vvector{X}$, we can write $\vvector{L}$ like
+
+
+\begin{equation}
+\vvector{L} = M_{a} \inner \vvector{\ddot{X}} + M_{v} \inner \vvector{\dot{X}} + M_{p} \inner \vvector{X} + \vvector{M_{c}} + M_{vv} \dinner \vvector{\dot{X}} \vvector{\dot{X}} + M_{vp} \dinner \vvector{\dot{X}} \vvector{X} + M_{pp} \dinner \vvector{X} \vvector{X}
+\end{equation}
+
+
+\section{Calculating the matrix}
+
+\subsection{Derivating $E$ to respect of $\dot{x}_{i}$}
+
+ 
+\begin{align*} 
+\left[\dfrac{\partial E}{\partial \dot{x}_{i}} \right]_{M} & = \dfrac{\partial}{\partial \dot{x}_{i}}  \sum_{j,k} \left(\dfrac{1}{2} M_{jk} \dot{x}_{j} \dot{x}_{k}  \right)  = \sum_{j, k} \left(\dfrac{1}{2} M_{jk} \delta_{ij} \dot{x}_{k} + \dfrac{1}{2} M_{jk} \delta_{ik} \dot{x}_{j} \right)  = \sum_{j} \dfrac{1}{2}\left(M_{ij} + M_{ji}\right) \dot{x}_{j} \\
+\left[\dfrac{\partial E}{\partial \dot{x}_{i}} \right]_{V} & = \dfrac{\partial}{\partial \dot{x}_{i}} \sum_{j, k} V_{jk} \dot{x}_{j} x_{k}  = \sum_{j, k} \left(V_{jk} \cdot \delta_{ij} x_{k} \right) = \sum_{j} V_{ij} x_{j}  \\
+\left[\dfrac{\partial E}{\partial \dot{x}_{i}} \right]_{K} & = \dfrac{\partial}{\partial \dot{x}_{i}} \sum_{j, k} K_{jk} x_{j} x_{k} = 0 \\
+\left[\dfrac{\partial E}{\partial \dot{x}_{i}} \right]_{A} & = \dfrac{\partial}{\partial \dot{x}_{i}} \sum_{j} A_{j} \dot{x}_{j}  = \sum_{j} A_{j} \cdot \delta_{ij} = A_{i} \\
+\left[\dfrac{\partial E}{\partial \dot{x}_{i}} \right]_{B} & = \dfrac{\partial}{\partial \dot{x}_{i}} \sum_{j} B_{j} x_{j} = 0 \\
+\left[\dfrac{\partial E}{\partial \dot{x}_{i}} \right]_{C} & = \dfrac{\partial}{\partial \dot{x}_{i}} C = 0 
+\end{align*}
+ 
+
+\subsection{Derivating previous result to respect of $t$}
+
+And so 
+ 
+\begin{align*} 
+\left[\dfrac{d}{dt}\left(\dfrac{\partial E}{\partial \dot{x}_{i}}\right)\right]_{M} & = \dfrac{d}{dt} \sum_{j}\dfrac{1}{2}\left[M_{ij} + M_{ji}\right] \dot{x}_{j} \\ 
+& = \sum_{j, k} \dfrac{1}{2} \left[\dfrac{\partial M_{ij}}{\partial x_{k}} + \dfrac{\partial M_{ji}}{\partial x_{k}} \right] \cdot \dot{x}_{j}\dot{x}_{k} + \sum_{j} \dfrac{1}{2}\left[M_{ij}+M_{ji}\right] \cdot \ddot{x}_{j} \\
+\left[\dfrac{d}{dt}\left(\dfrac{\partial E}{\partial \dot{x}_{i}}\right)\right]_{V} & = \dfrac{d}{dt} \sum_{j} V_{ij} x_{j} = \sum_{j} \left(V_{ij} \dot{x}_{j}\right) + \sum_{j, k} \dfrac{\partial V_{ij}}{\partial x_{k}} \cdot x_{j} \cdot \dot{x}_{k} \\
+\left[\dfrac{d}{dt}\left(\dfrac{\partial E}{\partial \dot{x}_{i}}\right)\right]_{K} & = \dfrac{d}{dt} 0 = 0  \\
+\left[\dfrac{d}{dt}\left(\dfrac{\partial E}{\partial \dot{x}_{i}}\right)\right]_{A} & = \dfrac{d}{dt} A_{i}  = \sum_{j} \dfrac{\partial A_{i}}{\partial x_{k}} \cdot \dot{x}_{k} \\
+\left[\dfrac{d}{dt}\left(\dfrac{\partial E}{\partial \dot{x}_{i}}\right)\right]_{B} & = \dfrac{d}{dt} 0  =  0 \\
+\left[\dfrac{d}{dt}\left(\dfrac{\partial E}{\partial \dot{x}_{i}}\right)\right]_{C} & = \dfrac{d}{dt} 0  =  0 
+\end{align*}
+ 
+
+\pagebreak 
+
+\subsection{Derivating $E$ to respect of $x_{i}$}
+
+And the last part 
+ 
+ 
+\begin{align*} 
+\left[ \dfrac{\partial E}{\partial x_{i}}\right]_{M} & = \dfrac{\partial}{\partial x_{i}} \sum_{j,  k} \dfrac{1}{2}M_{jk} \cdot \dot{x}_{j} \dot{x}_{k} = \sum_{j, k} \dfrac{1}{2} \ \dfrac{\partial M_{jk}}{\partial x_{i}} \cdot \dot{x}_{j} \dot{x}_{k}  \\
+\left[ \dfrac{\partial E}{\partial x_{i}}\right]_{V} & = \dfrac{\partial}{\partial x_{i}} \sum_{j, k} V_{jk} \cdot \dot{x}_{j} x_{k} = \sum_{j} V_{ji} \dot{x}_{j} + \sum_{jk} \dfrac{\partial V_{jk}}{\partial x_{i}} \cdot \dot{x}_{j} x_{k} \\ % = \dfrac{1}{2} \sum_{j, k} \dfrac{\partial V_{jk}}{\partial x_{i}} \cdot \dot{x}_{j} x_{k}  \\
+\left[ \dfrac{\partial E}{\partial x_{i}}\right]_{K} & = \dfrac{\partial}{\partial x_{i}} \sum_{j, k} \dfrac{1}{2}K_{jk} x_{j} x_{k} \\ 
+& = \dfrac{1}{2}\sum_{j, k} \left(K_{jk}x_{j} \delta_{ik} + K_{jk} \delta_{ij} x_{k} + \dfrac{\partial K_{jk}}{\partial x_{i}}\right) \\ 
+& = \dfrac{1}{2} \sum_{j}\left(K_{ij} + K_{ji}\right) \cdot x_{j} + \dfrac{1}{2}\sum_{jk} \dfrac{\partial K_{jk}}{\partial x_{i}} \cdot x_{j}x_{k} \\
+\left[\dfrac{\partial E}{\partial x_{i}}\right]_{A} & = \dfrac{\partial}{\partial x_{i}} \sum_{j} A_{j} \dot{x}_{j} = \sum_{j} \dfrac{\partial A_{j}}{\partial x_{i}} \dot{x}_{j} \\
+\left[\dfrac{\partial E}{\partial x_{i}}\right]_{B} & = \dfrac{\partial}{\partial x_{i}} \sum_{j} B_{j} x_{j}  = B_{i} + \sum_{j} \dfrac{\partial B_{j}}{\partial x_{i}} x_{j} \\
+\left[\dfrac{\partial E}{\partial x_{i}}\right]_{C} & = \dfrac{\partial C}{\partial x_{i}}  
+\end{align*} 
+ 
+
+\subsection{Result for each matrix}
+
+
+\begin{align*}
+\left[\dfrac{d}{dt} \dfrac{\partial E}{\partial \dot{x}_{i}} - \dfrac{\partial E}{\partial x_{i}}\right]_{M} & = \sum_{j} \dfrac{1}{2}\left[M_{ij}+M_{ji}\right] \ddot{x}_{j} + \sum_{jk} \dfrac{1}{2} \left[\dfrac{\partial M_{ij}}{\partial x_{k}} + \dfrac{\partial M_{ji}}{\partial x_{k}} - \dfrac{\partial M_{jk}}{\partial x_{i}}\right] \dot{x}_{j} \dot{x}_{k} \\
+\left[\dfrac{d}{dt} \dfrac{\partial E}{\partial \dot{x}_{i}} - \dfrac{\partial E}{\partial x_{i}}\right]_{V} & = \sum_{j} \left[V_{ij}-V_{ji}\right] \dot{x}_{j} + \sum_{jk} \dfrac{\partial V_{jk}}{\partial x_{i}} \dot{x}_{j} x_{k} \\
+\left[\dfrac{d}{dt} \dfrac{\partial E}{\partial \dot{x}_{i}} - \dfrac{\partial E}{\partial x_{i}}\right]_{K} & = \sum_{j} \dfrac{-1}{2} \left[K_{ij}+K_{ji}\right] x_{j} + \sum_{jk} \dfrac{-1}{2} \cdot \dfrac{\partial K_{jk}}{\partial x_{i}} x_{j} x_{k} \\
+\left[\dfrac{d}{dt} \dfrac{\partial E}{\partial \dot{x}_{i}} - \dfrac{\partial E}{\partial x_{i}}\right]_{A} & = \sum_{j} \left[\dfrac{\partial A_{i}}{\partial x_{j}} - \dfrac{\partial A_{j}}{\partial x_{i}} \right] \cdot \dot{x}_{j} \\
+\left[\dfrac{d}{dt} \dfrac{\partial E}{\partial \dot{x}_{i}} - \dfrac{\partial E}{\partial x_{i}}\right]_{B} & = -B_{i} - \sum_{j} \dfrac{\partial B_{j}}{\partial x_{i}} \cdot x_{j} \\
+\left[\dfrac{d}{dt} \dfrac{\partial E}{\partial \dot{x}_{i}} - \dfrac{\partial E}{\partial x_{i}}\right]_{C} & = - \dfrac{\partial C}{\partial x_{i}}
+\end{align*}
+
+
+\pagebreak
+ 
+\section{The relation between $E$ and $\vvector{L}$ using matrix}
+
+After all this calculation, we have
+
+$$ 
+E = \dfrac{1}{2} \vvector{\dot{X}} \inner \tensor{M} \inner \vvector{\dot{X}} + \vvector{\dot{X}} \inner \tensor{V} \inner \vvector{X} +  
+\dfrac{1}{2} \vvector{X} \inner \tensor{K} \inner \vvector{X} + A \inner \vvector{\dot{X}} + B \inner \vvector{X} + C 
+$$
+
+and we transform it to
+
+$$
+\vvector{L} = M_{a} \inner \vvector{\ddot{X}} + M_{v} \inner \vvector{\dot{X}} + M_{p} \inner \vvector{X} + \vvector{M_{c}} + M_{vv} \dinner \vvector{\dot{X}} \vvector{\dot{X}} + M_{vp} \dinner \vvector{\dot{X}} \vvector{X} + M_{pp} \dinner \vvector{X} \vvector{X}
+$$
+
+where
+
+\begin{align}
+\left[M_{a}\right]_{ij} & = \dfrac{1}{2} \left(M_{ij}+M_{ji}\right) \\
+\left[M_{v}\right]_{ij} & = V_{ij} - V_{ji} + \dfrac{\partial A_{i}}{\partial x_{j}} - \dfrac{\partial A_{j}}{\partial x_{i}} \\
+\left[M_{p}\right]_{ij} & = \dfrac{-1}{2}\left[K_{ij}+K_{ji}\right] - \dfrac{\partial B_{j}}{\partial x_{i}} \\
+\left[M_{c}\right]_{i} & = -B_{i} -\dfrac{\partial C}{\partial x_{i}} \\
+\left[M_{vv}\right]_{ijk} & = \dfrac{1}{2}\left[\dfrac{\partial M_{ij}}{\partial x_{k}} + \dfrac{\partial M_{ji}}{\partial x_{k}} - \dfrac{\partial M_{jk}}{\partial x_{i}}\right] \\
+\left[M_{vp}\right]_{ijk} & = \dfrac{\partial V_{jk}}{\partial x_{i}} \\
+\left[M_{pp}\right]_{ijk} & = \dfrac{-1}{2} \cdot \dfrac{\partial K_{jk}}{\partial x_{i}}
+\end{align}
+
+ 
+\end{document}
